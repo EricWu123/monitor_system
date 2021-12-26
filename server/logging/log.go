@@ -1,6 +1,7 @@
 package logging
 
 import (
+	"fmt"
 	"log"
 	"monitor_system/config"
 	"os"
@@ -42,6 +43,7 @@ func LogInfo(v ...interface{}) {
 		mylog = initLog()
 	}
 	if mylog == nil {
+		fmt.Println(v...)
 		return
 	}
 	mylog.Println(v...)
