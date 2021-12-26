@@ -12,7 +12,7 @@ func main() {
 	if conf == nil {
 		return
 	}
-
+	logging.LogInfo("app start...")
 	router, err := router.NewRouter()
 	if err != nil {
 		logging.LogInfo("new router failed. err:", err)

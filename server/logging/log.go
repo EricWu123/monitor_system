@@ -26,8 +26,10 @@ func initLog() *log.Logger {
 	}
 
 	conf := config.GetConfig()
+
+	os.MkdirAll(conf.Log.LogSavePath, 0775)
 	fileName := conf.Log.LogSavePath + conf.Log.LogFileName + conf.Log.LogFileExt
-	logFile, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	logFile, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0664)
 	if err != nil {
 		return nil
 	}
@@ -38,6 +40,9 @@ func initLog() *log.Logger {
 func LogInfo(v ...interface{}) {
 	if mylog == nil {
 		mylog = initLog()
+	}
+	if mylog == nil {
+		return
 	}
 	mylog.Println(v...)
 }

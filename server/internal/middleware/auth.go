@@ -3,66 +3,39 @@ package middleware
 import (
 	"monitor_system/config"
 	"monitor_system/global"
+	"monitor_system/internal/dao"
 	"monitor_system/logging"
-	"monitor_system/session"
+	"monitor_system/modules"
 	"net/http"
-	"net/url"
-	"sync"
 
 	"github.com/gin-gonic/gin"
 )
 
-type Auth struct {
-	session *session.Session
-	conf    *config.Conf
-}
-
-var (
-	auth      *Auth
-	authMutex sync.Mutex
-)
-
-func NewAuth(s *session.Session, c *config.Conf) *Auth {
-	if auth != nil {
-		return auth
-	}
-
-	authMutex.Lock()
-	defer authMutex.Unlock()
-
-	// double check
-	if auth != nil {
-		return auth
-	}
-
-	auth = &Auth{}
-	auth.conf = c
-	auth.session = s
-	return auth
-}
-
-func (a *Auth) Autheticate(context *gin.Context) {
-	sessionid, err := context.Request.Cookie("sessionid")
+func Autheticate(context *gin.Context) {
+	conf := config.GetConfig()
+	sess := dao.NewMysqlSession(conf)
+	sessID, err := context.Request.Cookie("sessionid")
 	if err != nil {
 		logging.LogInfo("no rights access. err:", err)
 		context.JSON(http.StatusOK, gin.H{"code": global.FAILED, "msg": "no rights access."})
 		context.Abort()
 		return
 	}
-	a.session.SessionID, _ = url.QueryUnescape(sessionid.Value)
-	if !a.session.Get() {
-		logging.LogInfo("session id is not valid.")
-		context.JSON(http.StatusOK, gin.H{"code": global.FAILED, "msg": "session id is not valid."})
+	ret, err := modules.IsValid(sessID.Value, sess)
+	if err != nil || !ret {
+		logging.LogInfo("no rights access. err:", err)
+		context.JSON(http.StatusOK, gin.H{"code": global.FAILED, "msg": "no rights access."})
 		context.Abort()
 		return
 	}
-	a.session.Update()
-	logging.LogInfo("auth success. sess:", a.session.SessionID)
+	modules.Update(sessID.Value, sess)
+	logging.LogInfo("auth success. sess:", sessID.Value)
 }
 
-func (a *Auth) ReportAuth(context *gin.Context) {
+func ReportAuth(context *gin.Context) {
+	conf := config.GetConfig()
 	authorization := context.Request.Header.Get("Authorization")
-	if authorization != "APPCODE "+a.conf.Server.AppCode {
+	if authorization != "APPCODE "+conf.Server.AppCode {
 		logging.LogInfo("appcode is not valid.")
 		context.JSON(http.StatusOK, gin.H{"code": global.FAILED, "msg": "appcode is not valid."})
 		context.Abort()

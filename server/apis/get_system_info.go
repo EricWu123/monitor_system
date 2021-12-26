@@ -2,10 +2,12 @@ package apis
 
 import (
 	"errors"
+	"monitor_system/config"
 	"monitor_system/global"
-	"monitor_system/internal/model"
+	"monitor_system/internal/dao"
 	"monitor_system/internal/utils"
 	"monitor_system/logging"
+	"monitor_system/modules"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -66,7 +68,9 @@ func SystemInfo(context *gin.Context) {
 		context.JSON(http.StatusOK, gin.H{"code": global.FAILED, "msg": err})
 		return
 	}
-	sysInfos, err := model.GetSystemInfo(queryCondition)
+	conf := config.GetConfig()
+	mysqlRepo := dao.NewSystemInfoMysql(conf.DB)
+	sysInfos, err := modules.GetSystemInfo(queryCondition, mysqlRepo)
 	if err != nil {
 		logging.LogInfo("get system info failed. err:", err)
 		context.JSON(http.StatusOK, gin.H{"code": global.FAILED, "msg": "get system info failed."})

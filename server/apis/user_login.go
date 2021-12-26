@@ -2,10 +2,13 @@ package apis
 
 import (
 	"errors"
+	"monitor_system/config"
 	"monitor_system/global"
-	"monitor_system/internal/model"
+	"monitor_system/internal/dao"
 	"monitor_system/internal/utils"
 	"monitor_system/logging"
+	"monitor_system/model"
+	"monitor_system/modules"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -34,7 +37,9 @@ func UserLogin(context *gin.Context) {
 	var user model.User
 	var authResult bool
 	user.UserName = param["userName"]
-	if authResult, e = user.LoginAuth(param["password"]); e != nil {
+	conf := config.GetConfig()
+	mysqlRepo := dao.NewUserMysql(conf)
+	if authResult, e = modules.LoginAuth(param["password"], param["userName"], mysqlRepo); e != nil {
 		logging.LogInfo("login failed. user name:", user.UserName, ",err:", e)
 		context.JSON(http.StatusOK, gin.H{"code": global.FAILED, "msg": "login failed. please try again."})
 		return
@@ -45,11 +50,13 @@ func UserLogin(context *gin.Context) {
 		return
 	}
 
-	e = user.SetSession(context)
+	sess := dao.NewMysqlSession(conf)
+	sessionID, e := sess.Set(user.UserName)
 	if e != nil {
 		context.JSON(http.StatusOK, gin.H{"code": global.FAILED, "msg": "login failed. set session failed."})
 		return
 	}
+	context.SetCookie(conf.Session.Name, sessionID, conf.Session.MaxAge, "/", "127.0.0.1", false, true)
 
 	context.JSON(http.StatusOK, gin.H{"code": global.SUCCESS, "msg": "login success"})
 

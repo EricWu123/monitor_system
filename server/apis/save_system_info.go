@@ -2,10 +2,13 @@ package apis
 
 import (
 	"errors"
+	"monitor_system/config"
 	"monitor_system/global"
-	"monitor_system/internal/model"
+	"monitor_system/internal/dao"
 	"monitor_system/internal/utils"
 	"monitor_system/logging"
+	"monitor_system/model"
+	"monitor_system/modules"
 	"net"
 	"net/http"
 
@@ -43,7 +46,9 @@ func SaveSystemInfo(context *gin.Context) {
 	}
 
 	logging.LogInfo("system info:%v", systemInfo)
-	e = systemInfo.Save()
+	conf := config.GetConfig()
+	mysqlRepo := dao.NewSystemInfoMysql(conf.DB)
+	e = modules.SaveSystemInfo(systemInfo, mysqlRepo)
 	if e != nil {
 		logging.LogInfo("save system info failed. err:", e)
 		context.JSON(http.StatusOK, gin.H{"code": global.FAILED, "msg": "save info failed"})
