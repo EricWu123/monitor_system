@@ -1,0 +1,76 @@
+package apis
+
+import (
+	"errors"
+	"monitor_system/global"
+	"monitor_system/internal/model"
+	"monitor_system/internal/utils"
+	"monitor_system/logging"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func parseQueryParam(context *gin.Context) (string, error) {
+	param := make(map[string]string)
+	e := context.BindJSON(&param)
+	if e != nil {
+		return "", errors.New("bind failed")
+	}
+	OS := param["OS"]                // 操作系统类型
+	hostName := param["HostName"]    // 主机名
+	timeRangeBegin := param["begin"] // 时间范围
+	timeRangeEnd := param["end"]     // 时间范围
+
+	result, e := utils.CheckStrWhite(OS, `^[0-9a-zA-Z]+$`, 100)
+	if e != nil || !result {
+		return "", errors.New("get system info failed, verify OS failed")
+	}
+	result, e = utils.CheckStrBlack(hostName, `[!@#$%^&*]+`, 100)
+	if e != nil || !result {
+		return "", errors.New("get system info failed, verify hostname failed")
+	}
+	result, e = utils.CheckStrWhite(timeRangeEnd, `^[0-9]+$`, -1)
+	if e != nil || !result {
+		return "", errors.New("get system info failed, verify end failed")
+	}
+
+	result, e = utils.CheckStrWhite(timeRangeBegin, `^[0-9]+$`, -1)
+	if e != nil || !result {
+		return "", errors.New("get system info failed, verify start failed")
+	}
+
+	if timeRangeEnd == "" || timeRangeBegin == "" {
+		return "", errors.New("get system info failed, start or end is nil")
+	}
+
+	condition := " where "
+	if OS != "" {
+		condition = condition + "OS = '" + OS + "' and "
+	}
+
+	if hostName != "" {
+		condition = condition + "hostName = '" + hostName + "' and "
+	}
+
+	if timeRangeBegin != "" && timeRangeEnd != "" {
+		condition = condition + "created <= " + timeRangeEnd + " and created >= " + timeRangeBegin
+	}
+	return condition, nil
+}
+
+func SystemInfo(context *gin.Context) {
+	var queryCondition string
+	var err error
+	if queryCondition, err = parseQueryParam(context); err != nil {
+		context.JSON(http.StatusOK, gin.H{"code": global.FAILED, "msg": err})
+		return
+	}
+	sysInfos, err := model.GetSystemInfo(queryCondition)
+	if err != nil {
+		logging.LogInfo("get system info failed. err:", err)
+		context.JSON(http.StatusOK, gin.H{"code": global.FAILED, "msg": "get system info failed."})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"code": global.SUCCESS, "msg": "get system info success", "data": sysInfos})
+}

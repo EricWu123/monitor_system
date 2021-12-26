@@ -1,0 +1,26 @@
+Server:
+  Name: monitor_system
+  RunMode: debug
+  HttpPort: 8090
+  AppCode: 7bb68fc49491c180ce6002f99d06db7f
+  CipherKey: PHvL%$o0oNNoOZnk#o2qbqCeQB1iXeIR
+  ReadTimeout: 60
+  WriteTimeout: 60
+Log:
+  LogSavePath: ./logs/
+  LogFileName: monitor_system
+  LogFileExt: .log
+  LogFileMaxSize: 10
+Session:
+  Name: sessionid
+  MaxAge: 100
+Database:
+  DBType: mysql
+  UserName: root
+  Password: 1234
+  DBName: monitor_system
+  Host: 127.0.0.1:3306
+  Charset: utf8
+  ParseTime: True
+  MaxIdleConns: 10
+  MaxOpenConns: 30

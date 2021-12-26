@@ -1,0 +1,11 @@
+Server:
+  Name: monitor_system_client
+  RunMode: debug
+  Addr: 127.0.0.1:8090
+  AppCode: 7bb68fc49491c180ce6002f99d06db7f
+  Interval: 60
+Log:
+  LogSavePath: ./logs/
+  LogFileName: monitor_system_client
+  LogFileExt: .log
+  LogFileMaxSize: 10
