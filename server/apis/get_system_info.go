@@ -3,11 +3,12 @@ package apis
 import (
 	"errors"
 	"monitor_system/config"
-	"monitor_system/global"
+	"monitor_system/errcode"
 	"monitor_system/internal/dao"
 	"monitor_system/internal/utils"
 	"monitor_system/logging"
 	"monitor_system/modules"
+	"monitor_system/response"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -65,7 +66,7 @@ func SystemInfo(context *gin.Context) {
 	var queryCondition string
 	var err error
 	if queryCondition, err = parseQueryParam(context); err != nil {
-		context.JSON(http.StatusOK, gin.H{"code": global.FAILED, "msg": err})
+		context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_INVALID_PARAMS))
 		return
 	}
 	conf := config.GetConfig()
@@ -73,8 +74,8 @@ func SystemInfo(context *gin.Context) {
 	sysInfos, err := modules.GetSystemInfo(queryCondition, mysqlRepo)
 	if err != nil {
 		logging.LogInfo("get system info failed. err:", err)
-		context.JSON(http.StatusOK, gin.H{"code": global.FAILED, "msg": "get system info failed."})
+		context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_FAILED))
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"code": global.SUCCESS, "msg": "get system info success", "data": sysInfos})
+	context.JSON(http.StatusOK, response.ResponseWithData(errcode.ERR_CODE_OK, sysInfos))
 }

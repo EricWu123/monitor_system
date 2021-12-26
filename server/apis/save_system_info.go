@@ -3,12 +3,13 @@ package apis
 import (
 	"errors"
 	"monitor_system/config"
-	"monitor_system/global"
+	"monitor_system/errcode"
 	"monitor_system/internal/dao"
 	"monitor_system/internal/utils"
 	"monitor_system/logging"
 	"monitor_system/model"
 	"monitor_system/modules"
+	"monitor_system/response"
 	"net"
 	"net/http"
 
@@ -41,7 +42,7 @@ func parseSystemInfoParam(context *gin.Context) (*model.SystemInfo, error) {
 func SaveSystemInfo(context *gin.Context) {
 	systemInfo, e := parseSystemInfoParam(context)
 	if e != nil {
-		context.JSON(http.StatusOK, gin.H{"code": global.FAILED, "msg": e})
+		context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_INVALID_PARAMS))
 		return
 	}
 
@@ -51,8 +52,8 @@ func SaveSystemInfo(context *gin.Context) {
 	e = modules.SaveSystemInfo(systemInfo, mysqlRepo)
 	if e != nil {
 		logging.LogInfo("save system info failed. err:", e)
-		context.JSON(http.StatusOK, gin.H{"code": global.FAILED, "msg": "save info failed"})
+		context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_FAILED))
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"code": global.SUCCESS, "msg": "save system info success"})
+	context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_OK))
 }

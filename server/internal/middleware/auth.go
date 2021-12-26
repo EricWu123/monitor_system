@@ -2,10 +2,11 @@ package middleware
 
 import (
 	"monitor_system/config"
-	"monitor_system/global"
+	"monitor_system/errcode"
 	"monitor_system/internal/dao"
 	"monitor_system/logging"
 	"monitor_system/modules"
+	"monitor_system/response"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -17,14 +18,14 @@ func Autheticate(context *gin.Context) {
 	sessID, err := context.Request.Cookie("sessionid")
 	if err != nil {
 		logging.LogInfo("no rights access. err:", err)
-		context.JSON(http.StatusOK, gin.H{"code": global.FAILED, "msg": "no rights access."})
+		context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_NO_RIGHTS))
 		context.Abort()
 		return
 	}
 	ret, err := modules.IsValid(sessID.Value, sess)
 	if err != nil || !ret {
 		logging.LogInfo("no rights access. err:", err)
-		context.JSON(http.StatusOK, gin.H{"code": global.FAILED, "msg": "no rights access."})
+		context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_NO_RIGHTS))
 		context.Abort()
 		return
 	}
@@ -37,8 +38,9 @@ func ReportAuth(context *gin.Context) {
 	authorization := context.Request.Header.Get("Authorization")
 	if authorization != "APPCODE "+conf.Server.AppCode {
 		logging.LogInfo("appcode is not valid.")
-		context.JSON(http.StatusOK, gin.H{"code": global.FAILED, "msg": "appcode is not valid."})
+		context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_NO_RIGHTS))
 		context.Abort()
+		return
 	}
 	logging.LogInfo("ReportAuth success.")
 }

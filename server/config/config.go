@@ -2,7 +2,6 @@ package config
 
 import (
 	"io/ioutil"
-	"monitor_system/global"
 	"sync"
 
 	"gopkg.in/yaml.v2"
@@ -47,6 +46,8 @@ var (
 	configMutex sync.Mutex
 )
 
+var ConfigPath = "./config/config.yaml"
+
 func GetConfig() *Conf {
 	if conf != nil {
 		return conf
@@ -62,7 +63,7 @@ func GetConfig() *Conf {
 
 	conf = &Conf{}
 	// 加载文件
-	yamlFile, err := ioutil.ReadFile(global.ConfigPath)
+	yamlFile, err := ioutil.ReadFile(ConfigPath)
 	if err != nil {
 		return nil
 	}
