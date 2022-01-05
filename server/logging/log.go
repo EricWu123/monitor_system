@@ -48,3 +48,14 @@ func LogInfo(v ...interface{}) {
 	}
 	mylog.Println(v...)
 }
+
+func LogInfof(format string, a ...interface{}) {
+	if mylog == nil {
+		mylog = initLog()
+	}
+	if mylog == nil {
+		fmt.Printf(format, a...)
+		return
+	}
+	mylog.Printf(format, a...)
+}

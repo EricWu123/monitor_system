@@ -46,7 +46,7 @@ func SaveSystemInfo(context *gin.Context) {
 		return
 	}
 
-	logging.LogInfo("system info:%v", systemInfo)
+	logging.LogInfo("system info:", systemInfo)
 	conf := config.GetConfig()
 	mysqlRepo := dao.NewSystemInfoMysql(conf.DB)
 	e = modules.SaveSystemInfo(systemInfo, mysqlRepo)

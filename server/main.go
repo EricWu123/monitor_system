@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"monitor_system/config"
 	"monitor_system/errcode"
 	router "monitor_system/internal/routers"
@@ -9,6 +10,8 @@ import (
 )
 
 func main() {
+	configPath := flag.String("configPath", "./config/config.yaml", "配置文件路径")
+	config.ConfigPath = *configPath
 	conf := config.GetConfig()
 	if conf == nil {
 		return

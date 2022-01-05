@@ -7,7 +7,7 @@ Server:
   ReadTimeout: 60
   WriteTimeout: 60
 Log:
-  LogSavePath: ./logs/
+  LogSavePath: /home/wyq/code/monitor_system/server/logs/
   LogFileName: monitor_system
   LogFileExt: .log
   LogFileMaxSize: 10

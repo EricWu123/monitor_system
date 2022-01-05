@@ -25,7 +25,7 @@ func (s *SystemInfoMysqlRepo) Get(condSql string) ([]model.SystemInfo, error) {
 	var sysInfos []model.SystemInfo
 	rows, err := s.mysql.Query("select hostName, os, IPs from system_info" + condSql)
 	if err != nil {
-		logging.LogInfo("Query system info failed. err:%v, sql:%v", err, condSql)
+		logging.LogInfof("Query system info failed. err:%v, sql:%v", err, condSql)
 		return nil, errors.New("query system info failed")
 	}
 	for rows.Next() {
@@ -55,13 +55,13 @@ func (s *SystemInfoMysqlRepo) Save(info *model.SystemInfo) error {
 	ret, err := tx.Exec(sqlStr, info.HostName, info.OS, strings.Join(info.IPs, ","), time.Now().Unix())
 	if err != nil {
 		tx.Rollback() // 回滚
-		logging.LogInfo("exec sqlStr failed, err:%v, sql:%v", err, sqlStr)
+		logging.LogInfof("exec sqlStr failed, err:%v, sql:%v", err, sqlStr)
 		return err
 	}
 	affRow, err := ret.RowsAffected()
 	if err != nil {
 		tx.Rollback() // 回滚
-		logging.LogInfo("exec RowsAffected failed, err:%v", err)
+		logging.LogInfof("exec RowsAffected failed, err:%v", err)
 		return err
 	}
 
@@ -69,7 +69,7 @@ func (s *SystemInfoMysqlRepo) Save(info *model.SystemInfo) error {
 		tx.Commit() // 提交事务
 	} else {
 		tx.Rollback() // 回滚
-		logging.LogInfo("insert failed, affRow:%v", affRow)
+		logging.LogInfof("insert failed, affRow:%v", affRow)
 		return errors.New("insert failed")
 	}
 

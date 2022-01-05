@@ -62,7 +62,7 @@ func parseQueryParam(context *gin.Context) (string, error) {
 	return condition, nil
 }
 
-func SystemInfo(context *gin.Context) {
+func QuerySystemInfo(context *gin.Context) {
 	var queryCondition string
 	var err error
 	if queryCondition, err = parseQueryParam(context); err != nil {
@@ -77,5 +77,7 @@ func SystemInfo(context *gin.Context) {
 		context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_FAILED))
 		return
 	}
+	logging.LogInfo("get system info success, info:", sysInfos)
+
 	context.JSON(http.StatusOK, response.ResponseWithData(errcode.ERR_CODE_OK, sysInfos))
 }

@@ -37,7 +37,7 @@ func ReportAuth(context *gin.Context) {
 	conf := config.GetConfig()
 	authorization := context.Request.Header.Get("Authorization")
 	if authorization != "APPCODE "+conf.Server.AppCode {
-		logging.LogInfo("appcode is not valid.")
+		logging.LogInfo("appcode is not valid. authorization:", authorization, conf.Server.AppCode)
 		context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_NO_RIGHTS))
 		context.Abort()
 		return

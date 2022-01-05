@@ -34,4 +34,9 @@ go run main.go system_info.go
 cd server/scripts
 ./run.sh
 ```
-
+### 单元测试
+```
+cd server/scripts
+./test.sh
+```
+生成的单元测试报告在：server/conver.out  server/converage.html

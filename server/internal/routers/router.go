@@ -23,7 +23,7 @@ func NewRouter() (*gin.Engine, error) {
 	r.Use(gin.Recovery())
 
 	r.POST("/report/system_info", middleware.ReportAuth, apis.SaveSystemInfo)
-	r.POST("/query/system_info", middleware.Autheticate, apis.SystemInfo)
+	r.POST("/query/system_info", middleware.Autheticate, apis.QuerySystemInfo)
 	r.POST("/login", apis.UserLogin)
 	r.POST("/", apis.UserLogin)
 

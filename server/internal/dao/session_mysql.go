@@ -34,12 +34,12 @@ func (s *SessionMysqlRepo) IsValid(sessionID string) (bool, error) {
 	row := s.mysqlDB.QueryRow("select * from session where sessionID = ?;", sessionID)
 	e := row.Scan(&sess.UserID, &sess.SessionID, &sess.TimeAccessed)
 	if e != nil {
-		logging.LogInfo("query failed. session id:%v, err:%v", sessionID, e)
+		logging.LogInfof("query failed. session id:%v, err:%v", sessionID, e)
 		return false, e
 	}
 	curTime := time.Now().Unix()
 	if curTime-sess.TimeAccessed.Unix() > int64(s.conf.Session.MaxAge) {
-		logging.LogInfo("sid time out. session id:%v", sessionID)
+		logging.LogInfof("sid time out. session id:%v", sessionID)
 		return false, errors.New("session is out of date")
 	}
 	return true, nil
@@ -60,7 +60,7 @@ func (s *SessionMysqlRepo) Set(userID string) (string, error) {
 	var count int
 	err = result.Scan(&count)
 	if err != nil {
-		logging.LogInfo("exec sqlStr failed, err:%v, sql:%v", err, sqlStr)
+		logging.LogInfof("exec sqlStr failed, err:%v, sql:%v", err, sqlStr)
 		tx.Rollback() // 回滚
 		return "", err
 	}
@@ -86,13 +86,13 @@ func (s *SessionMysqlRepo) Set(userID string) (string, error) {
 	ret, err := tx.Exec(sqlStr)
 	if err != nil {
 		tx.Rollback() // 回滚
-		logging.LogInfo("exec sqlStr failed, err:%v, sql:%v", err, sqlStr)
+		logging.LogInfof("exec sqlStr failed, err:%v, sql:%v", err, sqlStr)
 		return "", err
 	}
 	affRow, err := ret.RowsAffected()
 	if err != nil {
 		tx.Rollback() // 回滚
-		logging.LogInfo("exec ret.RowsAffected() failed, err:%v", err)
+		logging.LogInfof("exec ret.RowsAffected() failed, err:%v", err)
 		return "", err
 	}
 
@@ -124,13 +124,13 @@ func (s *SessionMysqlRepo) Update(sessionID string) error {
 	ret, err := tx.Exec(sqlStr)
 	if err != nil {
 		tx.Rollback() // 回滚
-		logging.LogInfo("exec sqlStr failed, err:%v, sql:%v", err, sqlStr)
+		logging.LogInfof("exec sqlStr failed, err:%v, sql:%v", err, sqlStr)
 		return err
 	}
 	affRow, err := ret.RowsAffected()
 	if err != nil {
 		tx.Rollback() // 回滚
-		logging.LogInfo("exec RowsAffected failed, err:%v", err)
+		logging.LogInfof("exec RowsAffected failed, err:%v", err)
 		return err
 	}
 
@@ -157,13 +157,13 @@ func (s *SessionMysqlRepo) Delete(sessionID string) error {
 	ret, err := tx.Exec(sqlStr)
 	if err != nil {
 		tx.Rollback() // 回滚
-		logging.LogInfo("exec sqlStr failed, err:%v, sql:%v", err, sqlStr)
+		logging.LogInfof("exec sqlStr failed, err:%v, sql:%v", err, sqlStr)
 		return err
 	}
 	affRow, err := ret.RowsAffected()
 	if err != nil {
 		tx.Rollback() // 回滚
-		logging.LogInfo("exec RowsAffected failed, err:%v", err)
+		logging.LogInfof("exec RowsAffected failed, err:%v", err)
 		return err
 	}
 	if affRow != 1 {

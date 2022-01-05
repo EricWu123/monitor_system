@@ -1,0 +1,1096 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>apis: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">monitor_system/apis/get_system_info.go (75.0%)</option>
+				
+				<option value="file1">monitor_system/apis/save_system_info.go (67.9%)</option>
+				
+				<option value="file2">monitor_system/apis/user_login.go (62.5%)</option>
+				
+				<option value="file3">monitor_system/config/config.go (78.6%)</option>
+				
+				<option value="file4">monitor_system/errcode/code_string.go (66.7%)</option>
+				
+				<option value="file5">monitor_system/internal/cipher/aes.go (89.3%)</option>
+				
+				<option value="file6">monitor_system/internal/dao/session_mysql.go (42.6%)</option>
+				
+				<option value="file7">monitor_system/internal/dao/system_info_mysql.go (57.5%)</option>
+				
+				<option value="file8">monitor_system/internal/dao/user_mysql.go (77.8%)</option>
+				
+				<option value="file9">monitor_system/internal/db/mysql.go (72.7%)</option>
+				
+				<option value="file10">monitor_system/internal/middleware/auth.go (83.3%)</option>
+				
+				<option value="file11">monitor_system/internal/routers/router.go (92.3%)</option>
+				
+				<option value="file12">monitor_system/internal/utils/valid.go (100.0%)</option>
+				
+				<option value="file13">monitor_system/logging/log.go (57.7%)</option>
+				
+				<option value="file14">monitor_system/modules/session.go (50.0%)</option>
+				
+				<option value="file15">monitor_system/modules/system_info.go (100.0%)</option>
+				
+				<option value="file16">monitor_system/modules/user.go (100.0%)</option>
+				
+				<option value="file17">monitor_system/response/response.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">no coverage</span>
+				<span class="cov1">low coverage</span>
+				<span class="cov2">*</span>
+				<span class="cov3">*</span>
+				<span class="cov4">*</span>
+				<span class="cov5">*</span>
+				<span class="cov6">*</span>
+				<span class="cov7">*</span>
+				<span class="cov8">*</span>
+				<span class="cov9">*</span>
+				<span class="cov10">high coverage</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package apis
+
+import (
+        "errors"
+        "monitor_system/config"
+        "monitor_system/errcode"
+        "monitor_system/internal/dao"
+        "monitor_system/internal/utils"
+        "monitor_system/logging"
+        "monitor_system/modules"
+        "monitor_system/response"
+        "net/http"
+
+        "github.com/gin-gonic/gin"
+)
+
+func parseQueryParam(context *gin.Context) (string, error) <span class="cov8" title="1">{
+        param := make(map[string]string)
+        e := context.BindJSON(&amp;param)
+        if e != nil </span><span class="cov0" title="0">{
+                return "", errors.New("bind failed")
+        }</span>
+        <span class="cov8" title="1">OS := param["OS"]                // 操作系统类型
+        hostName := param["HostName"]    // 主机名
+        timeRangeBegin := param["begin"] // 时间范围
+        timeRangeEnd := param["end"]     // 时间范围
+
+        result, e := utils.CheckStrWhite(OS, `^[0-9a-zA-Z]+$`, 100)
+        if e != nil || !result </span><span class="cov0" title="0">{
+                return "", errors.New("get system info failed, verify OS failed")
+        }</span>
+        <span class="cov8" title="1">result, e = utils.CheckStrBlack(hostName, `[!@#$%^&amp;*]+`, 100)
+        if e != nil || !result </span><span class="cov0" title="0">{
+                return "", errors.New("get system info failed, verify hostname failed")
+        }</span>
+        <span class="cov8" title="1">result, e = utils.CheckStrWhite(timeRangeEnd, `^[0-9]+$`, -1)
+        if e != nil || !result </span><span class="cov0" title="0">{
+                return "", errors.New("get system info failed, verify end failed")
+        }</span>
+
+        <span class="cov8" title="1">result, e = utils.CheckStrWhite(timeRangeBegin, `^[0-9]+$`, -1)
+        if e != nil || !result </span><span class="cov0" title="0">{
+                return "", errors.New("get system info failed, verify start failed")
+        }</span>
+
+        <span class="cov8" title="1">if timeRangeEnd == "" || timeRangeBegin == "" </span><span class="cov0" title="0">{
+                return "", errors.New("get system info failed, start or end is nil")
+        }</span>
+
+        <span class="cov8" title="1">condition := " where "
+        if OS != "" </span><span class="cov8" title="1">{
+                condition = condition + "OS = '" + OS + "' and "
+        }</span>
+
+        <span class="cov8" title="1">if hostName != "" </span><span class="cov8" title="1">{
+                condition = condition + "hostName = '" + hostName + "' and "
+        }</span>
+
+        <span class="cov8" title="1">if timeRangeBegin != "" &amp;&amp; timeRangeEnd != "" </span><span class="cov8" title="1">{
+                condition = condition + "created &lt;= " + timeRangeEnd + " and created &gt;= " + timeRangeBegin
+        }</span>
+        <span class="cov8" title="1">return condition, nil</span>
+}
+
+func QuerySystemInfo(context *gin.Context) <span class="cov8" title="1">{
+        var queryCondition string
+        var err error
+        if queryCondition, err = parseQueryParam(context); err != nil </span><span class="cov0" title="0">{
+                context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_INVALID_PARAMS))
+                return
+        }</span>
+        <span class="cov8" title="1">conf := config.GetConfig()
+        mysqlRepo := dao.NewSystemInfoMysql(conf.DB)
+        sysInfos, err := modules.GetSystemInfo(queryCondition, mysqlRepo)
+        if err != nil </span><span class="cov0" title="0">{
+                logging.LogInfo("get system info failed. err:", err)
+                context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_FAILED))
+                return
+        }</span>
+        <span class="cov8" title="1">logging.LogInfo("get system info success, info:", sysInfos)
+
+        context.JSON(http.StatusOK, response.ResponseWithData(errcode.ERR_CODE_OK, sysInfos))</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package apis
+
+import (
+        "errors"
+        "monitor_system/config"
+        "monitor_system/errcode"
+        "monitor_system/internal/dao"
+        "monitor_system/internal/utils"
+        "monitor_system/logging"
+        "monitor_system/model"
+        "monitor_system/modules"
+        "monitor_system/response"
+        "net"
+        "net/http"
+
+        "github.com/gin-gonic/gin"
+)
+
+func parseSystemInfoParam(context *gin.Context) (*model.SystemInfo, error) <span class="cov8" title="1">{
+        systemInfo := model.SystemInfo{}
+        e := context.ShouldBindJSON(&amp;systemInfo)
+        if e != nil </span><span class="cov0" title="0">{
+                return nil, errors.New("bind info failed")
+        }</span>
+        <span class="cov8" title="1">for _, ip := range systemInfo.IPs </span><span class="cov8" title="1">{
+                address := net.ParseIP(ip)
+                if address == nil </span><span class="cov0" title="0">{
+                        return nil, errors.New("wrong ip format")
+                }</span>
+        }
+        <span class="cov8" title="1">checkResult, e := utils.CheckStrWhite(systemInfo.HostName, `^[a-z-A-Z0-9-_+.]+$`, 100)
+        if e != nil || !checkResult </span><span class="cov0" title="0">{
+                return nil, errors.New("save failed, verify host name failed")
+        }</span>
+        <span class="cov8" title="1">checkResult, e = utils.CheckStrWhite(systemInfo.OS, `^[a-z-A-Z0-9-_+.]+$`, 100)
+        if e != nil || !checkResult </span><span class="cov0" title="0">{
+                return nil, errors.New("save failed, verify os failed")
+        }</span>
+        <span class="cov8" title="1">return &amp;systemInfo, nil</span>
+}
+
+func SaveSystemInfo(context *gin.Context) <span class="cov8" title="1">{
+        systemInfo, e := parseSystemInfoParam(context)
+        if e != nil </span><span class="cov0" title="0">{
+                context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_INVALID_PARAMS))
+                return
+        }</span>
+
+        <span class="cov8" title="1">logging.LogInfo("system info:", systemInfo)
+        conf := config.GetConfig()
+        mysqlRepo := dao.NewSystemInfoMysql(conf.DB)
+        e = modules.SaveSystemInfo(systemInfo, mysqlRepo)
+        if e != nil </span><span class="cov0" title="0">{
+                logging.LogInfo("save system info failed. err:", e)
+                context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_FAILED))
+                return
+        }</span>
+        <span class="cov8" title="1">context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_OK))</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package apis
+
+import (
+        "errors"
+        "monitor_system/config"
+        "monitor_system/errcode"
+        "monitor_system/internal/dao"
+        "monitor_system/internal/utils"
+        "monitor_system/logging"
+        "monitor_system/model"
+        "monitor_system/modules"
+        "monitor_system/response"
+        "net/http"
+
+        "github.com/gin-gonic/gin"
+)
+
+func parseLoginParam(context *gin.Context) (map[string]string, error) <span class="cov10" title="2">{
+        param := make(map[string]string)
+        e := context.BindJSON(&amp;param)
+        if e != nil </span><span class="cov0" title="0">{
+                return nil, errors.New("bind failed")
+        }</span>
+        <span class="cov10" title="2">checkResult, e := utils.CheckStrWhite(param["userName"], `^[a-z-A-Z0-9]+$`, 100)
+        if e != nil || !checkResult </span><span class="cov0" title="0">{
+                return nil, errors.New("login failed, verify failed")
+        }</span>
+        <span class="cov10" title="2">return param, nil</span>
+}
+
+func UserLogin(context *gin.Context) <span class="cov10" title="2">{
+        param, e := parseLoginParam(context)
+        if e != nil </span><span class="cov0" title="0">{
+                context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_INVALID_PARAMS))
+                return
+        }</span>
+        <span class="cov10" title="2">var user model.User
+        var authResult bool
+        user.UserName = param["userName"]
+        conf := config.GetConfig()
+        mysqlRepo := dao.NewUserMysql(conf)
+        if authResult, e = modules.LoginAuth(param["password"], param["userName"], mysqlRepo); e != nil </span><span class="cov0" title="0">{
+                logging.LogInfo("login failed. user name:", user.UserName, ",err:", e)
+                context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_FAILED))
+                return
+        }</span>
+        <span class="cov10" title="2">if !authResult </span><span class="cov0" title="0">{
+                logging.LogInfo("login failed. user name:", user.UserName)
+                context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_FAILED))
+                return
+        }</span>
+
+        <span class="cov10" title="2">sess := dao.NewMysqlSession(conf)
+        sessionID, e := sess.Set(user.UserName)
+        if e != nil </span><span class="cov0" title="0">{
+                context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_FAILED))
+                return
+        }</span>
+        <span class="cov10" title="2">context.SetCookie(conf.Session.Name, sessionID, conf.Session.MaxAge, "/", "127.0.0.1", false, true)
+
+        context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_OK))</span>
+
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package config
+
+import (
+        "io/ioutil"
+        "sync"
+
+        "gopkg.in/yaml.v2"
+)
+
+type ServerConfig struct {
+        Name      string `yaml:"Name"`
+        RunMode   string `yaml:"RunMode"`
+        AppCode   string `yaml:"AppCode"`
+        HttpPort  int    `yaml:"HttpPort"`
+        CipherKey string `yaml:"CipherKey"`
+}
+
+type LogConfig struct {
+        LogSavePath    string `yaml:"LogSavePath"`
+        LogFileName    string `yaml:"LogFileName"`
+        LogFileExt     string `yaml:"LogFileExt"`
+        LogFileMaxSize uint   `yaml:"LogFileMaxSize"`
+}
+type SessionConfig struct {
+        Name   string `yaml:"Name"`
+        MaxAge int    `yaml:"MaxAge"`
+}
+
+type DBConfig struct {
+        DBType   string `yaml:"DBType"`
+        UserName string `yaml:"UserName"`
+        Password string `yaml:"Password"`
+        DBName   string `yaml:"DBName"`
+        Host     string `yaml:"Host"`
+        Charset  string `yaml:"Charset"`
+}
+type Conf struct {
+        Server  *ServerConfig  `yaml:"Server"`
+        Log     *LogConfig     `yaml:"Log"`
+        Session *SessionConfig `yaml:"Session"`
+        DB      *DBConfig      `yaml:"Database"`
+}
+
+var (
+        conf        *Conf
+        configMutex sync.Mutex
+)
+
+var ConfigPath = "./config/config.yaml"
+
+func GetConfig() *Conf <span class="cov10" title="18">{
+        if conf != nil </span><span class="cov9" title="17">{
+                return conf
+        }</span>
+
+        <span class="cov1" title="1">configMutex.Lock()
+        defer configMutex.Unlock()
+
+        // double check
+        if conf != nil </span><span class="cov0" title="0">{
+                return conf
+        }</span>
+
+        <span class="cov1" title="1">conf = &amp;Conf{}
+        // 加载文件
+        yamlFile, err := ioutil.ReadFile(ConfigPath)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil
+        }</span>
+        // 将读取的yaml文件解析为响应的 struct
+        <span class="cov1" title="1">err = yaml.Unmarshal(yamlFile, conf)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil
+        }</span>
+
+        <span class="cov1" title="1">return conf</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">// Code generated by "stringer -type ErrCode -linecomment -output code_string.go"; DO NOT EDIT.
+
+package errcode
+
+import "strconv"
+
+func _() {
+        // An "invalid array index" compiler error signifies that the constant values have changed.
+        // Re-run the stringer command to generate them again.
+        var x [1]struct{}
+        _ = x[ERR_CODE_OK-0]
+        _ = x[ERR_CODE_INVALID_PARAMS-1]
+        _ = x[ERR_CODE_FAILED-2]
+        _ = x[ERR_CODE_NO_RIGHTS-3]
+}
+
+const _ErrCode_name = "请求成功无效参数请求失败没有权限"
+
+var _ErrCode_index = [...]uint8{0, 12, 24, 36, 48}
+
+func (i ErrCode) String() string <span class="cov10" title="6">{
+        if i &lt; 0 || i &gt;= ErrCode(len(_ErrCode_index)-1) </span><span class="cov0" title="0">{
+                return "ErrCode(" + strconv.FormatInt(int64(i), 10) + ")"
+        }</span>
+        <span class="cov10" title="6">return _ErrCode_name[_ErrCode_index[i]:_ErrCode_index[i+1]]</span>
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package cipher
+
+import (
+        "bytes"
+        "crypto/aes"
+        "crypto/cipher"
+        "encoding/base64"
+)
+
+func PKCS7Padding(ciphertext []byte, blockSize int) []byte <span class="cov6" title="3">{
+        padding := blockSize - len(ciphertext)%blockSize
+        padtext := bytes.Repeat([]byte{byte(padding)}, padding)
+        return append(ciphertext, padtext...)
+}</span>
+
+func PKCS7UnPadding(origData []byte) []byte <span class="cov10" title="7">{
+        length := len(origData)
+        unpadding := int(origData[length-1])
+        return origData[:(length - unpadding)]
+}</span>
+
+//AES加密,CBC
+func AesEncrypt(origDataStr string, key []byte) (string, error) <span class="cov6" title="3">{
+        origData := []byte(origDataStr)
+        block, err := aes.NewCipher(key)
+        if err != nil </span><span class="cov0" title="0">{
+                return "", err
+        }</span>
+        <span class="cov6" title="3">blockSize := block.BlockSize()
+        origData = PKCS7Padding(origData, blockSize)
+        blockMode := cipher.NewCBCEncrypter(block, key[:blockSize])
+        crypted := make([]byte, len(origData))
+        blockMode.CryptBlocks(crypted, origData)
+        return base64.StdEncoding.EncodeToString(crypted), nil</span>
+}
+
+//AES解密
+func AesDecrypt(crypted string, key []byte) (string, error) <span class="cov10" title="7">{
+        cryptedByte, err := base64.StdEncoding.DecodeString(crypted)
+        if err != nil </span><span class="cov0" title="0">{
+                return "", err
+        }</span>
+        <span class="cov10" title="7">block, err := aes.NewCipher(key)
+        if err != nil </span><span class="cov0" title="0">{
+                return "", err
+        }</span>
+        <span class="cov10" title="7">blockSize := block.BlockSize()
+        blockMode := cipher.NewCBCDecrypter(block, key[:blockSize])
+        origData := make([]byte, len(cryptedByte))
+        blockMode.CryptBlocks(origData, cryptedByte)
+        origData = PKCS7UnPadding(origData)
+        return string(origData), nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package dao
+
+import (
+        "database/sql"
+        "errors"
+        "fmt"
+        "monitor_system/config"
+        "monitor_system/internal/db"
+        "monitor_system/logging"
+        "monitor_system/model"
+        "time"
+
+        "github.com/rs/xid"
+)
+
+type SessionMysqlRepo struct {
+        mysqlDB *sql.DB
+        conf    *config.Conf
+}
+
+func NewMysqlSession(conf *config.Conf) *SessionMysqlRepo <span class="cov10" title="4">{
+        s := &amp;SessionMysqlRepo{}
+        s.mysqlDB = db.NewMysql(conf.DB)
+        s.conf = conf
+        return s
+}</span>
+
+func (s *SessionMysqlRepo) genSessionId() string <span class="cov5" title="2">{
+        return xid.New().String()
+}</span>
+
+func (s *SessionMysqlRepo) IsValid(sessionID string) (bool, error) <span class="cov1" title="1">{
+        sess := &amp;model.Session{}
+        row := s.mysqlDB.QueryRow("select * from session where sessionID = ?;", sessionID)
+        e := row.Scan(&amp;sess.UserID, &amp;sess.SessionID, &amp;sess.TimeAccessed)
+        if e != nil </span><span class="cov0" title="0">{
+                logging.LogInfof("query failed. session id:%v, err:%v", sessionID, e)
+                return false, e
+        }</span>
+        <span class="cov1" title="1">curTime := time.Now().Unix()
+        if curTime-sess.TimeAccessed.Unix() &gt; int64(s.conf.Session.MaxAge) </span><span class="cov0" title="0">{
+                logging.LogInfof("sid time out. session id:%v", sessionID)
+                return false, errors.New("session is out of date")
+        }</span>
+        <span class="cov1" title="1">return true, nil</span>
+}
+
+func (s *SessionMysqlRepo) Set(userID string) (string, error) <span class="cov5" title="2">{
+        tx, err := s.mysqlDB.Begin() // 开启事务
+        if err != nil </span><span class="cov0" title="0">{
+                if tx != nil </span><span class="cov0" title="0">{
+                        tx.Rollback() // 回滚
+                }</span>
+                <span class="cov0" title="0">logging.LogInfo("insert error, begin trasaction failed.")
+                return "", err</span>
+        }
+
+        <span class="cov5" title="2">sqlStr := fmt.Sprintf("select count(*) from session where userID = '%s' limit 1;", userID)
+        result := tx.QueryRow(sqlStr)
+        var count int
+        err = result.Scan(&amp;count)
+        if err != nil </span><span class="cov0" title="0">{
+                logging.LogInfof("exec sqlStr failed, err:%v, sql:%v", err, sqlStr)
+                tx.Rollback() // 回滚
+                return "", err
+        }</span>
+
+        <span class="cov5" title="2">curTime := time.Now().Format("2006-01-02 15:04:05")
+        sessionID := s.genSessionId()
+        if count == 0 </span><span class="cov0" title="0">{
+                sqlStr = fmt.Sprintf(
+                        "insert into session values('%s', '%s', '%s')",
+                        userID,
+                        sessionID,
+                        curTime,
+                )
+        }</span> else<span class="cov5" title="2"> {
+                sqlStr = fmt.Sprintf(
+                        "update session set expirationTime='%s',sessionID = '%s' where userID = '%s'",
+                        curTime,
+                        sessionID,
+                        userID,
+                )
+        }</span>
+
+        <span class="cov5" title="2">ret, err := tx.Exec(sqlStr)
+        if err != nil </span><span class="cov0" title="0">{
+                tx.Rollback() // 回滚
+                logging.LogInfof("exec sqlStr failed, err:%v, sql:%v", err, sqlStr)
+                return "", err
+        }</span>
+        <span class="cov5" title="2">affRow, err := ret.RowsAffected()
+        if err != nil </span><span class="cov0" title="0">{
+                tx.Rollback() // 回滚
+                logging.LogInfof("exec ret.RowsAffected() failed, err:%v", err)
+                return "", err
+        }</span>
+
+        <span class="cov5" title="2">if affRow != 1 </span><span class="cov0" title="0">{
+                logging.LogInfo("Set affRow:", affRow)
+                tx.Rollback()
+                return "", errors.New("insert session failed")
+        }</span>
+        <span class="cov5" title="2">tx.Commit() // 提交事务
+        logging.LogInfo("insert session success. sessionid:", sessionID)
+        return sessionID, nil</span>
+}
+
+func (s *SessionMysqlRepo) Update(sessionID string) error <span class="cov1" title="1">{
+        tx, err := s.mysqlDB.Begin() // 开启事务
+        if err != nil </span><span class="cov0" title="0">{
+                if tx != nil </span><span class="cov0" title="0">{
+                        tx.Rollback() // 回滚
+                }</span>
+                <span class="cov0" title="0">logging.LogInfo("update error, begin trasaction failed.")
+                return err</span>
+        }
+        <span class="cov1" title="1">curTime := time.Now().Format("2006-01-02 15:04:05")
+        sqlStr := fmt.Sprintf(
+                "update session set expirationTime='%s' where sessionID='%s'",
+                curTime,
+                sessionID,
+        )
+        ret, err := tx.Exec(sqlStr)
+        if err != nil </span><span class="cov0" title="0">{
+                tx.Rollback() // 回滚
+                logging.LogInfof("exec sqlStr failed, err:%v, sql:%v", err, sqlStr)
+                return err
+        }</span>
+        <span class="cov1" title="1">affRow, err := ret.RowsAffected()
+        if err != nil </span><span class="cov0" title="0">{
+                tx.Rollback() // 回滚
+                logging.LogInfof("exec RowsAffected failed, err:%v", err)
+                return err
+        }</span>
+
+        <span class="cov1" title="1">if affRow != 1 </span><span class="cov1" title="1">{
+                logging.LogInfo("Update affRow:", affRow)
+                tx.Rollback()
+                return errors.New("update session failed")
+        }</span>
+        <span class="cov0" title="0">tx.Commit() // 提交事务
+        logging.LogInfo("update session success.")
+        return nil</span>
+}
+
+func (s *SessionMysqlRepo) Delete(sessionID string) error <span class="cov0" title="0">{
+        tx, err := s.mysqlDB.Begin() // 开启事务
+        if err != nil </span><span class="cov0" title="0">{
+                if tx != nil </span><span class="cov0" title="0">{
+                        tx.Rollback() // 回滚
+                }</span>
+                <span class="cov0" title="0">logging.LogInfo("delete error, begin trasaction failed.")
+                return err</span>
+        }
+        <span class="cov0" title="0">sqlStr := fmt.Sprintf("delete from session where sessionID='%s'", sessionID)
+        ret, err := tx.Exec(sqlStr)
+        if err != nil </span><span class="cov0" title="0">{
+                tx.Rollback() // 回滚
+                logging.LogInfof("exec sqlStr failed, err:%v, sql:%v", err, sqlStr)
+                return err
+        }</span>
+        <span class="cov0" title="0">affRow, err := ret.RowsAffected()
+        if err != nil </span><span class="cov0" title="0">{
+                tx.Rollback() // 回滚
+                logging.LogInfof("exec RowsAffected failed, err:%v", err)
+                return err
+        }</span>
+        <span class="cov0" title="0">if affRow != 1 </span><span class="cov0" title="0">{
+                logging.LogInfo("Delete affRow:", affRow)
+                tx.Rollback()
+                return errors.New("delete session failed")
+        }</span>
+
+        <span class="cov0" title="0">tx.Commit()
+        logging.LogInfo("delete session success.")
+        return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file7" style="display: none">package dao
+
+import (
+        "database/sql"
+        "errors"
+        "monitor_system/config"
+        "monitor_system/internal/db"
+        "monitor_system/logging"
+        "monitor_system/model"
+        "strings"
+        "time"
+)
+
+type SystemInfoMysqlRepo struct {
+        mysql *sql.DB
+}
+
+func NewSystemInfoMysql(conf *config.DBConfig) *SystemInfoMysqlRepo <span class="cov4" title="2">{
+        sys := &amp;SystemInfoMysqlRepo{}
+        sys.mysql = db.NewMysql(conf)
+        return sys
+}</span>
+
+func (s *SystemInfoMysqlRepo) Get(condSql string) ([]model.SystemInfo, error) <span class="cov1" title="1">{
+        var sysInfos []model.SystemInfo
+        rows, err := s.mysql.Query("select hostName, os, IPs from system_info" + condSql)
+        if err != nil </span><span class="cov0" title="0">{
+                logging.LogInfof("Query system info failed. err:%v, sql:%v", err, condSql)
+                return nil, errors.New("query system info failed")
+        }</span>
+        <span class="cov1" title="1">for rows.Next() </span><span class="cov10" title="7">{
+                sysInfo := model.SystemInfo{}
+                var IPs string
+
+                if err := rows.Scan(&amp;sysInfo.HostName, &amp;sysInfo.OS, &amp;IPs); err != nil </span><span class="cov0" title="0">{
+                        logging.LogInfo("Query product failed. err:", err)
+                        return nil, errors.New("query product failed")
+                }</span>
+                <span class="cov10" title="7">sysInfo.IPs = strings.Split(IPs, ",")
+                sysInfos = append(sysInfos, sysInfo)</span>
+        }
+        <span class="cov1" title="1">return sysInfos, nil</span>
+}
+
+func (s *SystemInfoMysqlRepo) Save(info *model.SystemInfo) error <span class="cov1" title="1">{
+        tx, err := s.mysql.Begin() // 开启事务
+        if err != nil </span><span class="cov0" title="0">{
+                if tx != nil </span><span class="cov0" title="0">{
+                        tx.Rollback() // 回滚
+                }</span>
+                <span class="cov0" title="0">logging.LogInfo("insert error, begin trasaction failed.")
+                return err</span>
+        }
+        <span class="cov1" title="1">sqlStr := "insert into system_info (hostName,os,IPs,created) values(?,?,?,?);"
+        ret, err := tx.Exec(sqlStr, info.HostName, info.OS, strings.Join(info.IPs, ","), time.Now().Unix())
+        if err != nil </span><span class="cov0" title="0">{
+                tx.Rollback() // 回滚
+                logging.LogInfof("exec sqlStr failed, err:%v, sql:%v", err, sqlStr)
+                return err
+        }</span>
+        <span class="cov1" title="1">affRow, err := ret.RowsAffected()
+        if err != nil </span><span class="cov0" title="0">{
+                tx.Rollback() // 回滚
+                logging.LogInfof("exec RowsAffected failed, err:%v", err)
+                return err
+        }</span>
+
+        <span class="cov1" title="1">if affRow == 1 </span><span class="cov1" title="1">{
+                tx.Commit() // 提交事务
+        }</span> else<span class="cov0" title="0"> {
+                tx.Rollback() // 回滚
+                logging.LogInfof("insert failed, affRow:%v", affRow)
+                return errors.New("insert failed")
+        }</span>
+
+        <span class="cov1" title="1">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file8" style="display: none">package dao
+
+import (
+        "database/sql"
+        "monitor_system/config"
+        "monitor_system/internal/cipher"
+        "monitor_system/internal/db"
+        "monitor_system/model"
+)
+
+type UserRepo struct {
+        mysql     *sql.DB
+        cipherKey string
+}
+
+func NewUserMysql(conf *config.Conf) *UserRepo <span class="cov10" title="2">{
+        user := &amp;UserRepo{}
+        user.mysql = db.NewMysql(conf.DB)
+        user.cipherKey = conf.Server.CipherKey
+        return user
+}</span>
+
+func (u *UserRepo) LoginAuth(loginPass string, userName string) (bool, error) <span class="cov10" title="2">{
+        user := &amp;model.User{}
+        row := u.mysql.QueryRow("select * from user where userName = ?;", userName)
+        e := row.Scan(&amp;user.UserName, &amp;user.Password)
+        if e != nil </span><span class="cov0" title="0">{
+                return false, e
+        }</span>
+        // 解密数据库中的密码
+        <span class="cov10" title="2">password, e := cipher.AesDecrypt(user.Password, []byte(u.cipherKey))
+        if e != nil </span><span class="cov0" title="0">{
+                return false, e
+        }</span>
+
+        // 解密用户输入的密码
+        <span class="cov10" title="2">loginPassord, e := cipher.AesDecrypt(loginPass, []byte(u.cipherKey))
+        if e != nil </span><span class="cov0" title="0">{
+                return false, e
+        }</span>
+
+        <span class="cov10" title="2">if password == loginPassord </span><span class="cov10" title="2">{
+                return true, nil
+        }</span>
+        <span class="cov0" title="0">return false, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file9" style="display: none">package db
+
+import (
+        "database/sql"
+        "monitor_system/config"
+        "sync"
+
+        _ "github.com/go-sql-driver/mysql"
+)
+
+var (
+        mysqlHandler *sql.DB
+        mysqlMutex   sync.Mutex
+)
+
+func NewMysql(conf *config.DBConfig) *sql.DB <span class="cov10" title="13">{
+        if mysqlHandler != nil </span><span class="cov0" title="0">{
+                return mysqlHandler
+        }</span>
+
+        <span class="cov10" title="13">mysqlMutex.Lock()
+        defer mysqlMutex.Unlock()
+
+        // double check
+        if mysqlHandler != nil </span><span class="cov0" title="0">{
+                return mysqlHandler
+        }</span>
+        <span class="cov10" title="13">dsn := conf.UserName + ":" + conf.Password +
+                "@tcp(" + conf.Host + ")/" + conf.DBName + "?charset=utf8mb4&amp;parseTime=True&amp;loc=Local"
+        mysqlHandler, err := sql.Open("mysql", dsn)
+        if err != nil || mysqlHandler == nil </span><span class="cov0" title="0">{
+                return nil
+        }</span>
+
+        <span class="cov10" title="13">return mysqlHandler</span>
+}
+</pre>
+		
+		<pre class="file" id="file10" style="display: none">package middleware
+
+import (
+        "monitor_system/config"
+        "monitor_system/errcode"
+        "monitor_system/internal/dao"
+        "monitor_system/logging"
+        "monitor_system/modules"
+        "monitor_system/response"
+        "net/http"
+
+        "github.com/gin-gonic/gin"
+)
+
+func Autheticate(context *gin.Context) <span class="cov10" title="2">{
+        conf := config.GetConfig()
+        sess := dao.NewMysqlSession(conf)
+        sessID, err := context.Request.Cookie("sessionid")
+        if err != nil </span><span class="cov1" title="1">{
+                logging.LogInfo("no rights access. err:", err)
+                context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_NO_RIGHTS))
+                context.Abort()
+                return
+        }</span>
+        <span class="cov1" title="1">ret, err := modules.IsValid(sessID.Value, sess)
+        if err != nil || !ret </span><span class="cov0" title="0">{
+                logging.LogInfo("no rights access. err:", err)
+                context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_NO_RIGHTS))
+                context.Abort()
+                return
+        }</span>
+        <span class="cov1" title="1">modules.Update(sessID.Value, sess)
+        logging.LogInfo("auth success. sess:", sessID.Value)</span>
+}
+
+func ReportAuth(context *gin.Context) <span class="cov10" title="2">{
+        conf := config.GetConfig()
+        authorization := context.Request.Header.Get("Authorization")
+        if authorization != "APPCODE "+conf.Server.AppCode </span><span class="cov1" title="1">{
+                logging.LogInfo("appcode is not valid. authorization:", authorization, conf.Server.AppCode)
+                context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_NO_RIGHTS))
+                context.Abort()
+                return
+        }</span>
+        <span class="cov1" title="1">logging.LogInfo("ReportAuth success.")</span>
+}
+</pre>
+		
+		<pre class="file" id="file11" style="display: none">package router
+
+import (
+        "errors"
+        "monitor_system/apis"
+        "monitor_system/config"
+        "monitor_system/internal/db"
+        "monitor_system/internal/middleware"
+
+        "github.com/gin-gonic/gin"
+)
+
+func NewRouter() (*gin.Engine, error) <span class="cov10" title="5">{
+        conf := config.GetConfig()
+        db := db.NewMysql(conf.DB)
+        if db == nil </span><span class="cov0" title="0">{
+                return nil, errors.New("init db failed")
+        }</span>
+
+        <span class="cov10" title="5">gin.SetMode(conf.Server.RunMode)
+        r := gin.New()
+        r.Use(gin.Logger())
+        r.Use(gin.Recovery())
+
+        r.POST("/report/system_info", middleware.ReportAuth, apis.SaveSystemInfo)
+        r.POST("/query/system_info", middleware.Autheticate, apis.QuerySystemInfo)
+        r.POST("/login", apis.UserLogin)
+        r.POST("/", apis.UserLogin)
+
+        return r, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file12" style="display: none">package utils
+
+import (
+        "regexp"
+)
+
+// 白名单校验字符串
+func CheckStrWhite(str string, pattern string, maxLen int) (bool, error) <span class="cov10" title="11">{
+        if maxLen &gt; 0 </span><span class="cov9" title="9">{
+                if len(str) &gt; maxLen </span><span class="cov1" title="1">{
+                        return false, nil
+                }</span>
+        }
+        <span class="cov9" title="10">matched, err := regexp.MatchString(pattern, str)
+        return matched, err</span>
+}
+
+// 黑名单校验字符串
+func CheckStrBlack(str string, pattern string, maxLen int) (bool, error) <span class="cov6" title="4">{
+        if maxLen &gt; 0 </span><span class="cov6" title="4">{
+                if len(str) &gt; maxLen </span><span class="cov1" title="1">{
+                        return false, nil
+                }</span>
+        }
+        <span class="cov5" title="3">matched, err := regexp.MatchString(pattern, str)
+        return !matched, err</span>
+}
+</pre>
+		
+		<pre class="file" id="file13" style="display: none">package logging
+
+import (
+        "fmt"
+        "log"
+        "monitor_system/config"
+        "os"
+        "sync"
+)
+
+var (
+        mylog    *log.Logger
+        logMutex sync.Mutex
+)
+
+func initLog() *log.Logger <span class="cov1" title="1">{
+        if mylog != nil </span><span class="cov0" title="0">{
+                return mylog
+        }</span>
+
+        <span class="cov1" title="1">logMutex.Lock()
+        defer logMutex.Unlock()
+
+        // double check
+        if mylog != nil </span><span class="cov0" title="0">{
+                return mylog
+        }</span>
+
+        <span class="cov1" title="1">conf := config.GetConfig()
+
+        os.MkdirAll(conf.Log.LogSavePath, 0775)
+        fileName := conf.Log.LogSavePath + conf.Log.LogFileName + conf.Log.LogFileExt
+        logFile, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0664)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil
+        }</span>
+        <span class="cov1" title="1">mylog = log.New(logFile, "["+conf.Server.Name+"] ", log.Ldate|log.Ltime|log.Lshortfile)
+        return mylog</span>
+}
+
+func LogInfo(v ...interface{}) <span class="cov10" title="9">{
+        if mylog == nil </span><span class="cov1" title="1">{
+                mylog = initLog()
+        }</span>
+        <span class="cov10" title="9">if mylog == nil </span><span class="cov0" title="0">{
+                fmt.Println(v...)
+                return
+        }</span>
+        <span class="cov10" title="9">mylog.Println(v...)</span>
+}
+
+func LogInfof(format string, a ...interface{}) <span class="cov0" title="0">{
+        if mylog == nil </span><span class="cov0" title="0">{
+                mylog = initLog()
+        }</span>
+        <span class="cov0" title="0">if mylog == nil </span><span class="cov0" title="0">{
+                fmt.Printf(format, a...)
+                return
+        }</span>
+        <span class="cov0" title="0">mylog.Printf(format, a...)</span>
+}
+</pre>
+		
+		<pre class="file" id="file14" style="display: none">package modules
+
+import "monitor_system/internal/dao"
+
+func IsValid(sessionID string, s dao.ISession) (bool, error) <span class="cov8" title="1">{
+        return s.IsValid(sessionID)
+}</span>
+
+func Set(userID string, s dao.ISession) (string, error) <span class="cov0" title="0">{
+        return s.Set(userID)
+}</span>
+
+func Update(sessionID string, s dao.ISession) error <span class="cov8" title="1">{
+        return s.Update(sessionID)
+}</span>
+
+func Delete(sessionID string, s dao.ISession) error <span class="cov0" title="0">{
+        return s.Delete(sessionID)
+}</span>
+</pre>
+		
+		<pre class="file" id="file15" style="display: none">package modules
+
+import (
+        "monitor_system/internal/dao"
+        "monitor_system/model"
+)
+
+func GetSystemInfo(cond string, i dao.ISystemInfo) ([]model.SystemInfo, error) <span class="cov8" title="1">{
+        return i.Get(cond)
+}</span>
+
+func SaveSystemInfo(s *model.SystemInfo, i dao.ISystemInfo) error <span class="cov8" title="1">{
+        return i.Save(s)
+}</span>
+</pre>
+		
+		<pre class="file" id="file16" style="display: none">package modules
+
+import "monitor_system/internal/dao"
+
+func LoginAuth(loginPass string, userName string, user dao.IUser) (bool, error) <span class="cov10" title="2">{
+        return user.LoginAuth(loginPass, userName)
+}</span>
+</pre>
+		
+		<pre class="file" id="file17" style="display: none">package response
+
+import "monitor_system/errcode"
+
+type H map[string]interface{}
+
+func Response(code errcode.ErrCode) H <span class="cov10" title="5">{
+        return H{"code": code, "msg": code.String()}
+}</span>
+
+func ResponseWithData(code errcode.ErrCode, data interface{}) H <span class="cov1" title="1">{
+        return H{"code": code, "msg": code.String(), "data": data}
+}</span>
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
