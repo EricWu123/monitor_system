@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"monitor_system/config"
-	"monitor_system/errcode"
 	router "monitor_system/internal/routers"
 	"monitor_system/logging"
 	"strconv"
@@ -22,6 +21,6 @@ func main() {
 		logging.LogInfo("new router failed. err:", err)
 		return
 	}
-	logging.LogInfo(errcode.ERR_CODE_FAILED)
+
 	router.Run(":" + strconv.Itoa(conf.Server.HttpPort))
 }

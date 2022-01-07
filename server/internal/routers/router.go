@@ -7,6 +7,7 @@ import (
 	"monitor_system/internal/db"
 	"monitor_system/internal/middleware"
 
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,6 +27,10 @@ func NewRouter() (*gin.Engine, error) {
 	r.POST("/query/system_info", middleware.Autheticate, apis.QuerySystemInfo)
 	r.POST("/login", apis.UserLogin)
 	r.POST("/", apis.UserLogin)
+
+	if conf.Server.RunMode == "debug" {
+		pprof.Register(r)
+	}
 
 	return r, nil
 }
