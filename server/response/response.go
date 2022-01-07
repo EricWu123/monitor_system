@@ -1,6 +1,8 @@
 package response
 
-import "monitor_system/errcode"
+import (
+	"monitor_system/errcode"
+)
 
 type H map[string]interface{}
 

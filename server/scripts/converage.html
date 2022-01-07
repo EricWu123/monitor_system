@@ -55,11 +55,11 @@
 			<div id="nav">
 				<select id="files">
 				
-				<option value="file0">monitor_system/apis/get_system_info.go (75.0%)</option>
+				<option value="file0">monitor_system/apis/get_system_info.go (88.9%)</option>
 				
-				<option value="file1">monitor_system/apis/save_system_info.go (67.9%)</option>
+				<option value="file1">monitor_system/apis/save_system_info.go (85.7%)</option>
 				
-				<option value="file2">monitor_system/apis/user_login.go (62.5%)</option>
+				<option value="file2">monitor_system/apis/user_login.go (90.6%)</option>
 				
 				<option value="file3">monitor_system/config/config.go (78.6%)</option>
 				
@@ -71,7 +71,7 @@
 				
 				<option value="file7">monitor_system/internal/dao/system_info_mysql.go (57.5%)</option>
 				
-				<option value="file8">monitor_system/internal/dao/user_mysql.go (77.8%)</option>
+				<option value="file8">monitor_system/internal/dao/user_mysql.go (88.9%)</option>
 				
 				<option value="file9">monitor_system/internal/db/mysql.go (72.7%)</option>
 				
@@ -128,62 +128,63 @@ import (
         "github.com/gin-gonic/gin"
 )
 
-func parseQueryParam(context *gin.Context) (string, error) <span class="cov8" title="1">{
+func parseQueryParam(context *gin.Context) (string, error) <span class="cov10" title="5">{
         param := make(map[string]string)
         e := context.BindJSON(&amp;param)
         if e != nil </span><span class="cov0" title="0">{
                 return "", errors.New("bind failed")
         }</span>
-        <span class="cov8" title="1">OS := param["OS"]                // 操作系统类型
+        <span class="cov10" title="5">OS := param["OS"]                // 操作系统类型
         hostName := param["HostName"]    // 主机名
         timeRangeBegin := param["begin"] // 时间范围
         timeRangeEnd := param["end"]     // 时间范围
 
         result, e := utils.CheckStrWhite(OS, `^[0-9a-zA-Z]+$`, 100)
-        if e != nil || !result </span><span class="cov0" title="0">{
+        if e != nil || !result </span><span class="cov1" title="1">{
                 return "", errors.New("get system info failed, verify OS failed")
         }</span>
-        <span class="cov8" title="1">result, e = utils.CheckStrBlack(hostName, `[!@#$%^&amp;*]+`, 100)
-        if e != nil || !result </span><span class="cov0" title="0">{
+        <span class="cov8" title="4">result, e = utils.CheckStrBlack(hostName, `[!@#$%^&amp;*]+`, 100)
+        if e != nil || !result </span><span class="cov1" title="1">{
                 return "", errors.New("get system info failed, verify hostname failed")
         }</span>
-        <span class="cov8" title="1">result, e = utils.CheckStrWhite(timeRangeEnd, `^[0-9]+$`, -1)
-        if e != nil || !result </span><span class="cov0" title="0">{
+        <span class="cov7" title="3">result, e = utils.CheckStrWhite(timeRangeEnd, `^[0-9]+$`, -1)
+        if e != nil || !result </span><span class="cov1" title="1">{
                 return "", errors.New("get system info failed, verify end failed")
         }</span>
 
-        <span class="cov8" title="1">result, e = utils.CheckStrWhite(timeRangeBegin, `^[0-9]+$`, -1)
-        if e != nil || !result </span><span class="cov0" title="0">{
+        <span class="cov4" title="2">result, e = utils.CheckStrWhite(timeRangeBegin, `^[0-9]+$`, -1)
+        if e != nil || !result </span><span class="cov1" title="1">{
                 return "", errors.New("get system info failed, verify start failed")
         }</span>
 
-        <span class="cov8" title="1">if timeRangeEnd == "" || timeRangeBegin == "" </span><span class="cov0" title="0">{
+        <span class="cov1" title="1">if timeRangeEnd == "" || timeRangeBegin == "" </span><span class="cov0" title="0">{
                 return "", errors.New("get system info failed, start or end is nil")
         }</span>
 
-        <span class="cov8" title="1">condition := " where "
-        if OS != "" </span><span class="cov8" title="1">{
+        <span class="cov1" title="1">condition := " where "
+        if OS != "" </span><span class="cov1" title="1">{
                 condition = condition + "OS = '" + OS + "' and "
         }</span>
 
-        <span class="cov8" title="1">if hostName != "" </span><span class="cov8" title="1">{
+        <span class="cov1" title="1">if hostName != "" </span><span class="cov1" title="1">{
                 condition = condition + "hostName = '" + hostName + "' and "
         }</span>
 
-        <span class="cov8" title="1">if timeRangeBegin != "" &amp;&amp; timeRangeEnd != "" </span><span class="cov8" title="1">{
+        <span class="cov1" title="1">if timeRangeBegin != "" &amp;&amp; timeRangeEnd != "" </span><span class="cov1" title="1">{
                 condition = condition + "created &lt;= " + timeRangeEnd + " and created &gt;= " + timeRangeBegin
         }</span>
-        <span class="cov8" title="1">return condition, nil</span>
+        <span class="cov1" title="1">return condition, nil</span>
 }
 
-func QuerySystemInfo(context *gin.Context) <span class="cov8" title="1">{
+func QuerySystemInfo(context *gin.Context) <span class="cov10" title="5">{
         var queryCondition string
         var err error
-        if queryCondition, err = parseQueryParam(context); err != nil </span><span class="cov0" title="0">{
+        if queryCondition, err = parseQueryParam(context); err != nil </span><span class="cov8" title="4">{
+                logging.LogInfo("get system info failed. err:", err)
                 context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_INVALID_PARAMS))
                 return
         }</span>
-        <span class="cov8" title="1">conf := config.GetConfig()
+        <span class="cov1" title="1">conf := config.GetConfig()
         mysqlRepo := dao.NewSystemInfoMysql(conf.DB)
         sysInfos, err := modules.GetSystemInfo(queryCondition, mysqlRepo)
         if err != nil </span><span class="cov0" title="0">{
@@ -191,7 +192,7 @@ func QuerySystemInfo(context *gin.Context) <span class="cov8" title="1">{
                 context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_FAILED))
                 return
         }</span>
-        <span class="cov8" title="1">logging.LogInfo("get system info success, info:", sysInfos)
+        <span class="cov1" title="1">logging.LogInfo("get system info success, info:", sysInfos)
 
         context.JSON(http.StatusOK, response.ResponseWithData(errcode.ERR_CODE_OK, sysInfos))</span>
 }
@@ -215,37 +216,37 @@ import (
         "github.com/gin-gonic/gin"
 )
 
-func parseSystemInfoParam(context *gin.Context) (*model.SystemInfo, error) <span class="cov8" title="1">{
+func parseSystemInfoParam(context *gin.Context) (*model.SystemInfo, error) <span class="cov10" title="4">{
         systemInfo := model.SystemInfo{}
         e := context.ShouldBindJSON(&amp;systemInfo)
         if e != nil </span><span class="cov0" title="0">{
                 return nil, errors.New("bind info failed")
         }</span>
-        <span class="cov8" title="1">for _, ip := range systemInfo.IPs </span><span class="cov8" title="1">{
+        <span class="cov10" title="4">for _, ip := range systemInfo.IPs </span><span class="cov10" title="4">{
                 address := net.ParseIP(ip)
-                if address == nil </span><span class="cov0" title="0">{
+                if address == nil </span><span class="cov1" title="1">{
                         return nil, errors.New("wrong ip format")
                 }</span>
         }
-        <span class="cov8" title="1">checkResult, e := utils.CheckStrWhite(systemInfo.HostName, `^[a-z-A-Z0-9-_+.]+$`, 100)
-        if e != nil || !checkResult </span><span class="cov0" title="0">{
+        <span class="cov8" title="3">checkResult, e := utils.CheckStrWhite(systemInfo.HostName, `^[a-z-A-Z0-9-_+.]+$`, 100)
+        if e != nil || !checkResult </span><span class="cov1" title="1">{
                 return nil, errors.New("save failed, verify host name failed")
         }</span>
-        <span class="cov8" title="1">checkResult, e = utils.CheckStrWhite(systemInfo.OS, `^[a-z-A-Z0-9-_+.]+$`, 100)
-        if e != nil || !checkResult </span><span class="cov0" title="0">{
+        <span class="cov5" title="2">checkResult, e = utils.CheckStrWhite(systemInfo.OS, `^[a-z-A-Z0-9-_+.]+$`, 100)
+        if e != nil || !checkResult </span><span class="cov1" title="1">{
                 return nil, errors.New("save failed, verify os failed")
         }</span>
-        <span class="cov8" title="1">return &amp;systemInfo, nil</span>
+        <span class="cov1" title="1">return &amp;systemInfo, nil</span>
 }
 
-func SaveSystemInfo(context *gin.Context) <span class="cov8" title="1">{
+func SaveSystemInfo(context *gin.Context) <span class="cov10" title="4">{
         systemInfo, e := parseSystemInfoParam(context)
-        if e != nil </span><span class="cov0" title="0">{
+        if e != nil </span><span class="cov8" title="3">{
                 context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_INVALID_PARAMS))
                 return
         }</span>
 
-        <span class="cov8" title="1">logging.LogInfo("system info:", systemInfo)
+        <span class="cov1" title="1">logging.LogInfo("system info:", systemInfo)
         conf := config.GetConfig()
         mysqlRepo := dao.NewSystemInfoMysql(conf.DB)
         e = modules.SaveSystemInfo(systemInfo, mysqlRepo)
@@ -254,7 +255,7 @@ func SaveSystemInfo(context *gin.Context) <span class="cov8" title="1">{
                 context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_FAILED))
                 return
         }</span>
-        <span class="cov8" title="1">context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_OK))</span>
+        <span class="cov1" title="1">context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_OK))</span>
 }
 </pre>
 		
@@ -275,48 +276,48 @@ import (
         "github.com/gin-gonic/gin"
 )
 
-func parseLoginParam(context *gin.Context) (map[string]string, error) <span class="cov10" title="2">{
+func parseLoginParam(context *gin.Context) (map[string]string, error) <span class="cov10" title="5">{
         param := make(map[string]string)
         e := context.BindJSON(&amp;param)
         if e != nil </span><span class="cov0" title="0">{
                 return nil, errors.New("bind failed")
         }</span>
-        <span class="cov10" title="2">checkResult, e := utils.CheckStrWhite(param["userName"], `^[a-z-A-Z0-9]+$`, 100)
-        if e != nil || !checkResult </span><span class="cov0" title="0">{
+        <span class="cov10" title="5">checkResult, e := utils.CheckStrWhite(param["userName"], `^[a-z-A-Z0-9]+$`, 100)
+        if e != nil || !checkResult </span><span class="cov1" title="1">{
                 return nil, errors.New("login failed, verify failed")
         }</span>
-        <span class="cov10" title="2">return param, nil</span>
+        <span class="cov8" title="4">return param, nil</span>
 }
 
-func UserLogin(context *gin.Context) <span class="cov10" title="2">{
+func UserLogin(context *gin.Context) <span class="cov10" title="5">{
         param, e := parseLoginParam(context)
-        if e != nil </span><span class="cov0" title="0">{
+        if e != nil </span><span class="cov1" title="1">{
                 context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_INVALID_PARAMS))
                 return
         }</span>
-        <span class="cov10" title="2">var user model.User
+        <span class="cov8" title="4">var user model.User
         var authResult bool
         user.UserName = param["userName"]
         conf := config.GetConfig()
         mysqlRepo := dao.NewUserMysql(conf)
-        if authResult, e = modules.LoginAuth(param["password"], param["userName"], mysqlRepo); e != nil </span><span class="cov0" title="0">{
+        if authResult, e = modules.LoginAuth(param["password"], param["userName"], mysqlRepo); e != nil </span><span class="cov1" title="1">{
                 logging.LogInfo("login failed. user name:", user.UserName, ",err:", e)
                 context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_FAILED))
                 return
         }</span>
-        <span class="cov10" title="2">if !authResult </span><span class="cov0" title="0">{
+        <span class="cov7" title="3">if !authResult </span><span class="cov1" title="1">{
                 logging.LogInfo("login failed. user name:", user.UserName)
                 context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_FAILED))
                 return
         }</span>
 
-        <span class="cov10" title="2">sess := dao.NewMysqlSession(conf)
+        <span class="cov4" title="2">sess := dao.NewMysqlSession(conf)
         sessionID, e := sess.Set(user.UserName)
         if e != nil </span><span class="cov0" title="0">{
                 context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_FAILED))
                 return
         }</span>
-        <span class="cov10" title="2">context.SetCookie(conf.Session.Name, sessionID, conf.Session.MaxAge, "/", "127.0.0.1", false, true)
+        <span class="cov4" title="2">context.SetCookie(conf.Session.Name, sessionID, conf.Session.MaxAge, "/", "127.0.0.1", false, true)
 
         context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_OK))</span>
 
@@ -373,8 +374,8 @@ var (
 
 var ConfigPath = "./config/config.yaml"
 
-func GetConfig() *Conf <span class="cov10" title="18">{
-        if conf != nil </span><span class="cov9" title="17">{
+func GetConfig() *Conf <span class="cov10" title="35">{
+        if conf != nil </span><span class="cov9" title="34">{
                 return conf
         }</span>
 
@@ -422,11 +423,11 @@ const _ErrCode_name = "请求成功无效参数请求失败没有权限"
 
 var _ErrCode_index = [...]uint8{0, 12, 24, 36, 48}
 
-func (i ErrCode) String() string <span class="cov10" title="6">{
+func (i ErrCode) String() string <span class="cov10" title="16">{
         if i &lt; 0 || i &gt;= ErrCode(len(_ErrCode_index)-1) </span><span class="cov0" title="0">{
                 return "ErrCode(" + strconv.FormatInt(int64(i), 10) + ")"
         }</span>
-        <span class="cov10" title="6">return _ErrCode_name[_ErrCode_index[i]:_ErrCode_index[i+1]]</span>
+        <span class="cov10" title="16">return _ErrCode_name[_ErrCode_index[i]:_ErrCode_index[i+1]]</span>
 }
 </pre>
 		
@@ -439,26 +440,26 @@ import (
         "encoding/base64"
 )
 
-func PKCS7Padding(ciphertext []byte, blockSize int) []byte <span class="cov6" title="3">{
+func PKCS7Padding(ciphertext []byte, blockSize int) []byte <span class="cov5" title="3">{
         padding := blockSize - len(ciphertext)%blockSize
         padtext := bytes.Repeat([]byte{byte(padding)}, padding)
         return append(ciphertext, padtext...)
 }</span>
 
-func PKCS7UnPadding(origData []byte) []byte <span class="cov10" title="7">{
+func PKCS7UnPadding(origData []byte) []byte <span class="cov10" title="9">{
         length := len(origData)
         unpadding := int(origData[length-1])
         return origData[:(length - unpadding)]
 }</span>
 
 //AES加密,CBC
-func AesEncrypt(origDataStr string, key []byte) (string, error) <span class="cov6" title="3">{
+func AesEncrypt(origDataStr string, key []byte) (string, error) <span class="cov5" title="3">{
         origData := []byte(origDataStr)
         block, err := aes.NewCipher(key)
         if err != nil </span><span class="cov0" title="0">{
                 return "", err
         }</span>
-        <span class="cov6" title="3">blockSize := block.BlockSize()
+        <span class="cov5" title="3">blockSize := block.BlockSize()
         origData = PKCS7Padding(origData, blockSize)
         blockMode := cipher.NewCBCEncrypter(block, key[:blockSize])
         crypted := make([]byte, len(origData))
@@ -467,16 +468,16 @@ func AesEncrypt(origDataStr string, key []byte) (string, error) <span class="cov
 }
 
 //AES解密
-func AesDecrypt(crypted string, key []byte) (string, error) <span class="cov10" title="7">{
+func AesDecrypt(crypted string, key []byte) (string, error) <span class="cov10" title="9">{
         cryptedByte, err := base64.StdEncoding.DecodeString(crypted)
         if err != nil </span><span class="cov0" title="0">{
                 return "", err
         }</span>
-        <span class="cov10" title="7">block, err := aes.NewCipher(key)
+        <span class="cov10" title="9">block, err := aes.NewCipher(key)
         if err != nil </span><span class="cov0" title="0">{
                 return "", err
         }</span>
-        <span class="cov10" title="7">blockSize := block.BlockSize()
+        <span class="cov10" title="9">blockSize := block.BlockSize()
         blockMode := cipher.NewCBCDecrypter(block, key[:blockSize])
         origData := make([]byte, len(cryptedByte))
         blockMode.CryptBlocks(origData, cryptedByte)
@@ -505,18 +506,18 @@ type SessionMysqlRepo struct {
         conf    *config.Conf
 }
 
-func NewMysqlSession(conf *config.Conf) *SessionMysqlRepo <span class="cov10" title="4">{
+func NewMysqlSession(conf *config.Conf) *SessionMysqlRepo <span class="cov10" title="8">{
         s := &amp;SessionMysqlRepo{}
         s.mysqlDB = db.NewMysql(conf.DB)
         s.conf = conf
         return s
 }</span>
 
-func (s *SessionMysqlRepo) genSessionId() string <span class="cov5" title="2">{
+func (s *SessionMysqlRepo) genSessionId() string <span class="cov4" title="2">{
         return xid.New().String()
 }</span>
 
-func (s *SessionMysqlRepo) IsValid(sessionID string) (bool, error) <span class="cov1" title="1">{
+func (s *SessionMysqlRepo) IsValid(sessionID string) (bool, error) <span class="cov7" title="5">{
         sess := &amp;model.Session{}
         row := s.mysqlDB.QueryRow("select * from session where sessionID = ?;", sessionID)
         e := row.Scan(&amp;sess.UserID, &amp;sess.SessionID, &amp;sess.TimeAccessed)
@@ -524,15 +525,15 @@ func (s *SessionMysqlRepo) IsValid(sessionID string) (bool, error) <span class="
                 logging.LogInfof("query failed. session id:%v, err:%v", sessionID, e)
                 return false, e
         }</span>
-        <span class="cov1" title="1">curTime := time.Now().Unix()
+        <span class="cov7" title="5">curTime := time.Now().Unix()
         if curTime-sess.TimeAccessed.Unix() &gt; int64(s.conf.Session.MaxAge) </span><span class="cov0" title="0">{
                 logging.LogInfof("sid time out. session id:%v", sessionID)
                 return false, errors.New("session is out of date")
         }</span>
-        <span class="cov1" title="1">return true, nil</span>
+        <span class="cov7" title="5">return true, nil</span>
 }
 
-func (s *SessionMysqlRepo) Set(userID string) (string, error) <span class="cov5" title="2">{
+func (s *SessionMysqlRepo) Set(userID string) (string, error) <span class="cov4" title="2">{
         tx, err := s.mysqlDB.Begin() // 开启事务
         if err != nil </span><span class="cov0" title="0">{
                 if tx != nil </span><span class="cov0" title="0">{
@@ -542,7 +543,7 @@ func (s *SessionMysqlRepo) Set(userID string) (string, error) <span class="cov5"
                 return "", err</span>
         }
 
-        <span class="cov5" title="2">sqlStr := fmt.Sprintf("select count(*) from session where userID = '%s' limit 1;", userID)
+        <span class="cov4" title="2">sqlStr := fmt.Sprintf("select count(*) from session where userID = '%s' limit 1;", userID)
         result := tx.QueryRow(sqlStr)
         var count int
         err = result.Scan(&amp;count)
@@ -552,7 +553,7 @@ func (s *SessionMysqlRepo) Set(userID string) (string, error) <span class="cov5"
                 return "", err
         }</span>
 
-        <span class="cov5" title="2">curTime := time.Now().Format("2006-01-02 15:04:05")
+        <span class="cov4" title="2">curTime := time.Now().Format("2006-01-02 15:04:05")
         sessionID := s.genSessionId()
         if count == 0 </span><span class="cov0" title="0">{
                 sqlStr = fmt.Sprintf(
@@ -561,7 +562,7 @@ func (s *SessionMysqlRepo) Set(userID string) (string, error) <span class="cov5"
                         sessionID,
                         curTime,
                 )
-        }</span> else<span class="cov5" title="2"> {
+        }</span> else<span class="cov4" title="2"> {
                 sqlStr = fmt.Sprintf(
                         "update session set expirationTime='%s',sessionID = '%s' where userID = '%s'",
                         curTime,
@@ -570,30 +571,30 @@ func (s *SessionMysqlRepo) Set(userID string) (string, error) <span class="cov5"
                 )
         }</span>
 
-        <span class="cov5" title="2">ret, err := tx.Exec(sqlStr)
+        <span class="cov4" title="2">ret, err := tx.Exec(sqlStr)
         if err != nil </span><span class="cov0" title="0">{
                 tx.Rollback() // 回滚
                 logging.LogInfof("exec sqlStr failed, err:%v, sql:%v", err, sqlStr)
                 return "", err
         }</span>
-        <span class="cov5" title="2">affRow, err := ret.RowsAffected()
+        <span class="cov4" title="2">affRow, err := ret.RowsAffected()
         if err != nil </span><span class="cov0" title="0">{
                 tx.Rollback() // 回滚
                 logging.LogInfof("exec ret.RowsAffected() failed, err:%v", err)
                 return "", err
         }</span>
 
-        <span class="cov5" title="2">if affRow != 1 </span><span class="cov0" title="0">{
+        <span class="cov4" title="2">if affRow != 1 </span><span class="cov0" title="0">{
                 logging.LogInfo("Set affRow:", affRow)
                 tx.Rollback()
                 return "", errors.New("insert session failed")
         }</span>
-        <span class="cov5" title="2">tx.Commit() // 提交事务
+        <span class="cov4" title="2">tx.Commit() // 提交事务
         logging.LogInfo("insert session success. sessionid:", sessionID)
         return sessionID, nil</span>
 }
 
-func (s *SessionMysqlRepo) Update(sessionID string) error <span class="cov1" title="1">{
+func (s *SessionMysqlRepo) Update(sessionID string) error <span class="cov7" title="5">{
         tx, err := s.mysqlDB.Begin() // 开启事务
         if err != nil </span><span class="cov0" title="0">{
                 if tx != nil </span><span class="cov0" title="0">{
@@ -602,7 +603,7 @@ func (s *SessionMysqlRepo) Update(sessionID string) error <span class="cov1" tit
                 <span class="cov0" title="0">logging.LogInfo("update error, begin trasaction failed.")
                 return err</span>
         }
-        <span class="cov1" title="1">curTime := time.Now().Format("2006-01-02 15:04:05")
+        <span class="cov7" title="5">curTime := time.Now().Format("2006-01-02 15:04:05")
         sqlStr := fmt.Sprintf(
                 "update session set expirationTime='%s' where sessionID='%s'",
                 curTime,
@@ -614,14 +615,14 @@ func (s *SessionMysqlRepo) Update(sessionID string) error <span class="cov1" tit
                 logging.LogInfof("exec sqlStr failed, err:%v, sql:%v", err, sqlStr)
                 return err
         }</span>
-        <span class="cov1" title="1">affRow, err := ret.RowsAffected()
+        <span class="cov7" title="5">affRow, err := ret.RowsAffected()
         if err != nil </span><span class="cov0" title="0">{
                 tx.Rollback() // 回滚
                 logging.LogInfof("exec RowsAffected failed, err:%v", err)
                 return err
         }</span>
 
-        <span class="cov1" title="1">if affRow != 1 </span><span class="cov1" title="1">{
+        <span class="cov7" title="5">if affRow != 1 </span><span class="cov7" title="5">{
                 logging.LogInfo("Update affRow:", affRow)
                 tx.Rollback()
                 return errors.New("update session failed")
@@ -759,36 +760,36 @@ type UserRepo struct {
         cipherKey string
 }
 
-func NewUserMysql(conf *config.Conf) *UserRepo <span class="cov10" title="2">{
+func NewUserMysql(conf *config.Conf) *UserRepo <span class="cov10" title="4">{
         user := &amp;UserRepo{}
         user.mysql = db.NewMysql(conf.DB)
         user.cipherKey = conf.Server.CipherKey
         return user
 }</span>
 
-func (u *UserRepo) LoginAuth(loginPass string, userName string) (bool, error) <span class="cov10" title="2">{
+func (u *UserRepo) LoginAuth(loginPass string, userName string) (bool, error) <span class="cov10" title="4">{
         user := &amp;model.User{}
         row := u.mysql.QueryRow("select * from user where userName = ?;", userName)
         e := row.Scan(&amp;user.UserName, &amp;user.Password)
-        if e != nil </span><span class="cov0" title="0">{
+        if e != nil </span><span class="cov1" title="1">{
                 return false, e
         }</span>
         // 解密数据库中的密码
-        <span class="cov10" title="2">password, e := cipher.AesDecrypt(user.Password, []byte(u.cipherKey))
+        <span class="cov8" title="3">password, e := cipher.AesDecrypt(user.Password, []byte(u.cipherKey))
         if e != nil </span><span class="cov0" title="0">{
                 return false, e
         }</span>
 
         // 解密用户输入的密码
-        <span class="cov10" title="2">loginPassord, e := cipher.AesDecrypt(loginPass, []byte(u.cipherKey))
+        <span class="cov8" title="3">loginPassord, e := cipher.AesDecrypt(loginPass, []byte(u.cipherKey))
         if e != nil </span><span class="cov0" title="0">{
                 return false, e
         }</span>
 
-        <span class="cov10" title="2">if password == loginPassord </span><span class="cov10" title="2">{
+        <span class="cov8" title="3">if password == loginPassord </span><span class="cov5" title="2">{
                 return true, nil
         }</span>
-        <span class="cov0" title="0">return false, nil</span>
+        <span class="cov1" title="1">return false, nil</span>
 }
 </pre>
 		
@@ -807,26 +808,26 @@ var (
         mysqlMutex   sync.Mutex
 )
 
-func NewMysql(conf *config.DBConfig) *sql.DB <span class="cov10" title="13">{
+func NewMysql(conf *config.DBConfig) *sql.DB <span class="cov10" title="20">{
         if mysqlHandler != nil </span><span class="cov0" title="0">{
                 return mysqlHandler
         }</span>
 
-        <span class="cov10" title="13">mysqlMutex.Lock()
+        <span class="cov10" title="20">mysqlMutex.Lock()
         defer mysqlMutex.Unlock()
 
         // double check
         if mysqlHandler != nil </span><span class="cov0" title="0">{
                 return mysqlHandler
         }</span>
-        <span class="cov10" title="13">dsn := conf.UserName + ":" + conf.Password +
+        <span class="cov10" title="20">dsn := conf.UserName + ":" + conf.Password +
                 "@tcp(" + conf.Host + ")/" + conf.DBName + "?charset=utf8mb4&amp;parseTime=True&amp;loc=Local"
         mysqlHandler, err := sql.Open("mysql", dsn)
         if err != nil || mysqlHandler == nil </span><span class="cov0" title="0">{
                 return nil
         }</span>
 
-        <span class="cov10" title="13">return mysqlHandler</span>
+        <span class="cov10" title="20">return mysqlHandler</span>
 }
 </pre>
 		
@@ -844,7 +845,7 @@ import (
         "github.com/gin-gonic/gin"
 )
 
-func Autheticate(context *gin.Context) <span class="cov10" title="2">{
+func Autheticate(context *gin.Context) <span class="cov10" title="6">{
         conf := config.GetConfig()
         sess := dao.NewMysqlSession(conf)
         sessID, err := context.Request.Cookie("sessionid")
@@ -854,18 +855,18 @@ func Autheticate(context *gin.Context) <span class="cov10" title="2">{
                 context.Abort()
                 return
         }</span>
-        <span class="cov1" title="1">ret, err := modules.IsValid(sessID.Value, sess)
+        <span class="cov9" title="5">ret, err := modules.IsValid(sessID.Value, sess)
         if err != nil || !ret </span><span class="cov0" title="0">{
                 logging.LogInfo("no rights access. err:", err)
                 context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_NO_RIGHTS))
                 context.Abort()
                 return
         }</span>
-        <span class="cov1" title="1">modules.Update(sessID.Value, sess)
+        <span class="cov9" title="5">modules.Update(sessID.Value, sess)
         logging.LogInfo("auth success. sess:", sessID.Value)</span>
 }
 
-func ReportAuth(context *gin.Context) <span class="cov10" title="2">{
+func ReportAuth(context *gin.Context) <span class="cov9" title="5">{
         conf := config.GetConfig()
         authorization := context.Request.Header.Get("Authorization")
         if authorization != "APPCODE "+conf.Server.AppCode </span><span class="cov1" title="1">{
@@ -874,7 +875,7 @@ func ReportAuth(context *gin.Context) <span class="cov10" title="2">{
                 context.Abort()
                 return
         }</span>
-        <span class="cov1" title="1">logging.LogInfo("ReportAuth success.")</span>
+        <span class="cov7" title="4">logging.LogInfo("ReportAuth success.")</span>
 }
 </pre>
 		
@@ -890,14 +891,14 @@ import (
         "github.com/gin-gonic/gin"
 )
 
-func NewRouter() (*gin.Engine, error) <span class="cov10" title="5">{
+func NewRouter() (*gin.Engine, error) <span class="cov10" title="6">{
         conf := config.GetConfig()
         db := db.NewMysql(conf.DB)
         if db == nil </span><span class="cov0" title="0">{
                 return nil, errors.New("init db failed")
         }</span>
 
-        <span class="cov10" title="5">gin.SetMode(conf.Server.RunMode)
+        <span class="cov10" title="6">gin.SetMode(conf.Server.RunMode)
         r := gin.New()
         r.Use(gin.Logger())
         r.Use(gin.Recovery())
@@ -918,24 +919,24 @@ import (
 )
 
 // 白名单校验字符串
-func CheckStrWhite(str string, pattern string, maxLen int) (bool, error) <span class="cov10" title="11">{
-        if maxLen &gt; 0 </span><span class="cov9" title="9">{
+func CheckStrWhite(str string, pattern string, maxLen int) (bool, error) <span class="cov10" title="24">{
+        if maxLen &gt; 0 </span><span class="cov9" title="19">{
                 if len(str) &gt; maxLen </span><span class="cov1" title="1">{
                         return false, nil
                 }</span>
         }
-        <span class="cov9" title="10">matched, err := regexp.MatchString(pattern, str)
+        <span class="cov9" title="23">matched, err := regexp.MatchString(pattern, str)
         return matched, err</span>
 }
 
 // 黑名单校验字符串
-func CheckStrBlack(str string, pattern string, maxLen int) (bool, error) <span class="cov6" title="4">{
-        if maxLen &gt; 0 </span><span class="cov6" title="4">{
+func CheckStrBlack(str string, pattern string, maxLen int) (bool, error) <span class="cov6" title="7">{
+        if maxLen &gt; 0 </span><span class="cov6" title="7">{
                 if len(str) &gt; maxLen </span><span class="cov1" title="1">{
                         return false, nil
                 }</span>
         }
-        <span class="cov5" title="3">matched, err := regexp.MatchString(pattern, str)
+        <span class="cov6" title="6">matched, err := regexp.MatchString(pattern, str)
         return !matched, err</span>
 }
 </pre>
@@ -980,15 +981,15 @@ func initLog() *log.Logger <span class="cov1" title="1">{
         return mylog</span>
 }
 
-func LogInfo(v ...interface{}) <span class="cov10" title="9">{
+func LogInfo(v ...interface{}) <span class="cov10" title="26">{
         if mylog == nil </span><span class="cov1" title="1">{
                 mylog = initLog()
         }</span>
-        <span class="cov10" title="9">if mylog == nil </span><span class="cov0" title="0">{
+        <span class="cov10" title="26">if mylog == nil </span><span class="cov0" title="0">{
                 fmt.Println(v...)
                 return
         }</span>
-        <span class="cov10" title="9">mylog.Println(v...)</span>
+        <span class="cov10" title="26">mylog.Println(v...)</span>
 }
 
 func LogInfof(format string, a ...interface{}) <span class="cov0" title="0">{
@@ -1007,7 +1008,7 @@ func LogInfof(format string, a ...interface{}) <span class="cov0" title="0">{
 
 import "monitor_system/internal/dao"
 
-func IsValid(sessionID string, s dao.ISession) (bool, error) <span class="cov8" title="1">{
+func IsValid(sessionID string, s dao.ISession) (bool, error) <span class="cov10" title="5">{
         return s.IsValid(sessionID)
 }</span>
 
@@ -1015,7 +1016,7 @@ func Set(userID string, s dao.ISession) (string, error) <span class="cov0" title
         return s.Set(userID)
 }</span>
 
-func Update(sessionID string, s dao.ISession) error <span class="cov8" title="1">{
+func Update(sessionID string, s dao.ISession) error <span class="cov10" title="5">{
         return s.Update(sessionID)
 }</span>
 
@@ -1044,18 +1045,20 @@ func SaveSystemInfo(s *model.SystemInfo, i dao.ISystemInfo) error <span class="c
 
 import "monitor_system/internal/dao"
 
-func LoginAuth(loginPass string, userName string, user dao.IUser) (bool, error) <span class="cov10" title="2">{
+func LoginAuth(loginPass string, userName string, user dao.IUser) (bool, error) <span class="cov10" title="4">{
         return user.LoginAuth(loginPass, userName)
 }</span>
 </pre>
 		
 		<pre class="file" id="file17" style="display: none">package response
 
-import "monitor_system/errcode"
+import (
+        "monitor_system/errcode"
+)
 
 type H map[string]interface{}
 
-func Response(code errcode.ErrCode) H <span class="cov10" title="5">{
+func Response(code errcode.ErrCode) H <span class="cov10" title="15">{
         return H{"code": code, "msg": code.String()}
 }</span>
 

@@ -29,6 +29,29 @@ func genReq(url string, param interface{}) (*http.Request, error) {
 	return req, nil
 }
 
+func getSessionID(sessionName string) (string, error) {
+	router, err := NewRouter()
+	if err != nil {
+		return "", err
+	}
+	w := httptest.NewRecorder()
+	// 登录获取session
+	loginParam := make(map[string]string)
+	loginParam["userName"] = "admin"
+	loginParam["password"] = "BiTYKRZpk8VONUjnZ8XMeA=="
+	loginRequest, _ := genReq("http://127.0.0.1:8090/login", loginParam)
+	router.ServeHTTP(w, loginRequest)
+
+	loginResp := w.Result()
+
+	var sessionid string
+	for _, cookie := range loginResp.Cookies() {
+		if cookie.Name == sessionName {
+			sessionid = cookie.Value
+		}
+	}
+	return sessionid, nil
+}
 func readBody(r *http.Response) (string, error) {
 	if r == nil {
 		return "", errors.New("nil resp")
@@ -51,25 +74,40 @@ func TestLogin(t *testing.T) {
 		t.Error("new router failed.")
 		return
 	}
-	w := httptest.NewRecorder()
-	param := make(map[string]string)
-	param["userName"] = "admin"
-	param["password"] = "BiTYKRZpk8VONUjnZ8XMeA=="
-	request, _ := genReq("http://127.0.0.1:8090/login", param)
-	router.ServeHTTP(w, request)
-
-	resp := w.Result()
-	assert.Equal(t, 200, resp.StatusCode)
-
-	body, err := readBody(resp)
-	if err != nil {
-		fmt.Println("post err:", err)
-		t.Error("post failed.")
-		return
+	type saveParam struct {
+		UserName string `json:"userName"`
+		Password string `json:"password"`
 	}
-	fmt.Println("body:", body)
-	code := gjson.Get(body, "code").String()
-	assert.Equal(t, "0", code)
+	params := []saveParam{
+		{UserName: "admin", Password: "BiTYKRZpk8VONUjnZ8XMeA=="},
+		{UserName: "guest", Password: "BiTYKRZpk8VONUjnZ8XMeA=="},
+		{UserName: "adaamin", Password: "BiTYKRZpk8VONUjnZ8XMeA=="},
+		{UserName: "&&%", Password: "BiTYKRZpk8VONUjnZ8XMeA=="},
+	}
+	returnCode := []string{
+		"0",
+		"2",
+		"2",
+		"1",
+	}
+	for idx, value := range params {
+		w := httptest.NewRecorder()
+		request, _ := genReq("http://127.0.0.1:8090/login", value)
+		router.ServeHTTP(w, request)
+
+		resp := w.Result()
+		assert.Equal(t, 200, resp.StatusCode)
+
+		body, err := readBody(resp)
+		if err != nil {
+			fmt.Println("post err:", err)
+			t.Error("post failed.")
+			return
+		}
+		fmt.Println("body:", body)
+		code := gjson.Get(body, "code").String()
+		assert.Equal(t, returnCode[idx], code)
+	}
 }
 
 func TestSaveSystemInfoNorights(t *testing.T) {
@@ -102,7 +140,7 @@ func TestSaveSystemInfoNorights(t *testing.T) {
 	assert.Equal(t, "3", code)
 }
 
-func TestSaveSystemInfoOK(t *testing.T) {
+func TestSaveSystemInfo(t *testing.T) {
 	config.ConfigPath = "/home/wyq/code/monitor_system/server/config/config.yaml"
 	router, err := NewRouter()
 	if err != nil {
@@ -110,27 +148,42 @@ func TestSaveSystemInfoOK(t *testing.T) {
 		t.Error("new router failed.")
 		return
 	}
-	w := httptest.NewRecorder()
-	param := make(map[string]interface{})
-	param["HostName"] = "wyq-System-Product-Name"
-	param["OS"] = "linux"
-	param["IPs"] = []string{"1.1.1.1"}
-	request, _ := genReq("http://127.0.0.1:8090/report/system_info", param)
-	request.Header.Add("Authorization", "APPCODE "+config.GetConfig().Server.AppCode)
-	router.ServeHTTP(w, request)
-
-	resp := w.Result()
-	assert.Equal(t, 200, resp.StatusCode)
-
-	body, err := readBody(resp)
-	if err != nil {
-		fmt.Println("post err:", err)
-		t.Error("post failed.")
-		return
+	type saveParam struct {
+		OS       string   `json:"OS"`
+		HostName string   `json:"HostName"`
+		IPs      []string `json:"IPs"`
 	}
-	fmt.Println("body:", body)
-	code := gjson.Get(body, "code").String()
-	assert.Equal(t, "0", code)
+	params := []saveParam{
+		{OS: "linux;touch test", HostName: "wyq-System-Product-Name", IPs: []string{"1.1.1.1"}},
+		{OS: "linux", HostName: "*wyq-System-Product-Name", IPs: []string{"1.1.1.1"}},
+		{OS: "linux", HostName: "wyq-System-Product-Name", IPs: []string{"1.11.1"}},
+		{OS: "linux", HostName: "wyq-System-Product-Name", IPs: []string{"1.1.1.1"}},
+	}
+	returnCode := []string{
+		"1",
+		"1",
+		"1",
+		"0",
+	}
+	for idx, value := range params {
+		w := httptest.NewRecorder()
+		request, _ := genReq("http://127.0.0.1:8090/report/system_info", value)
+		request.Header.Add("Authorization", "APPCODE "+config.GetConfig().Server.AppCode)
+		router.ServeHTTP(w, request)
+
+		resp := w.Result()
+		assert.Equal(t, 200, resp.StatusCode)
+
+		body, err := readBody(resp)
+		if err != nil {
+			fmt.Println("post err:", err)
+			t.Error("post failed.")
+			return
+		}
+		fmt.Println("body:", body)
+		code := gjson.Get(body, "code").String()
+		assert.Equal(t, returnCode[idx], code)
+	}
 }
 
 func TestQuerySystemInfoNoRights(t *testing.T) {
@@ -165,7 +218,7 @@ func TestQuerySystemInfoNoRights(t *testing.T) {
 	assert.Equal(t, "3", code)
 }
 
-func TestQuerySystemInfoOK(t *testing.T) {
+func TestQuerySystemInfo(t *testing.T) {
 	config.ConfigPath = "/home/wyq/code/monitor_system/server/config/config.yaml"
 	router, err := NewRouter()
 	if err != nil {
@@ -173,44 +226,48 @@ func TestQuerySystemInfoOK(t *testing.T) {
 		t.Error("new router failed.")
 		return
 	}
-	w := httptest.NewRecorder()
-	// 登录获取session
-	loginParam := make(map[string]string)
-	loginParam["userName"] = "admin"
-	loginParam["password"] = "BiTYKRZpk8VONUjnZ8XMeA=="
-	request, _ := genReq("http://127.0.0.1:8090/login", loginParam)
-	router.ServeHTTP(w, request)
+	sessionid, _ := getSessionID(config.GetConfig().Session.Name)
 
-	resp := w.Result()
-	assert.Equal(t, 200, resp.StatusCode)
+	type queryParam struct {
+		OS       string `json:"OS"`
+		HostName string `json:"HostName"`
+		Begin    string `json:"begin"`
+		End      string `json:"end"`
+	}
+	params := []queryParam{
+		{OS: "linux;touch test", HostName: "wyq-System-Product-Name", Begin: "1639305120", End: "1639316241"},
+		{OS: "linux", HostName: "*wyq-System-Product-Name", Begin: "1639305120", End: "1639316241"},
+		{OS: "linux", HostName: "wyq-System-Product-Name", Begin: "1639305120", End: "bb"},
+		{OS: "linux", HostName: "wyq-System-Product-Name", Begin: "aa", End: "1639316241"},
+		{OS: "linux", HostName: "wyq-System-Product-Name", Begin: "1639305120", End: "1639316241"},
+	}
+	returnCode := []string{
+		"1",
+		"1",
+		"1",
+		"1",
+		"0",
+	}
+	for idx, value := range params {
+		w := httptest.NewRecorder()
 
-	var sessionid string
-	for _, cookie := range resp.Cookies() {
-		if cookie.Name == config.GetConfig().Session.Name {
-			sessionid = cookie.Value
+		request, _ := genReq("http://127.0.0.1:8090/query/system_info", value)
+		sessionCookies := &http.Cookie{Name: config.GetConfig().Session.Name, Value: sessionid}
+		request.AddCookie(sessionCookies)
+		router.ServeHTTP(w, request)
+
+		resp := w.Result()
+		assert.Equal(t, 200, resp.StatusCode)
+
+		body, err := readBody(resp)
+		if err != nil {
+			fmt.Println("post err:", err)
+			t.Error("post failed.")
+			return
 		}
+		fmt.Println("body:", body)
+		code := gjson.Get(body, "code").String()
+		assert.Equal(t, returnCode[idx], code)
 	}
 
-	param := make(map[string]interface{})
-	param["begin"] = "1639305120"
-	param["end"] = "1639316241"
-	param["HostName"] = "wyq-System-Product-Name"
-	param["OS"] = "linux"
-	request, _ = genReq("http://127.0.0.1:8090/query/system_info", param)
-	sessionCookies := &http.Cookie{Name: config.GetConfig().Session.Name, Value: sessionid}
-	request.AddCookie(sessionCookies)
-	router.ServeHTTP(w, request)
-
-	resp = w.Result()
-	assert.Equal(t, 200, resp.StatusCode)
-
-	body, err := readBody(resp)
-	if err != nil {
-		fmt.Println("post err:", err)
-		t.Error("post failed.")
-		return
-	}
-	fmt.Println("body:", body)
-	code := gjson.Get(body, "code").String()
-	assert.Equal(t, "0", code)
 }
