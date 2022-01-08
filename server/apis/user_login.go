@@ -51,7 +51,8 @@ func UserLogin(context *gin.Context) {
 	}
 
 	sess := dao.NewMysqlSession(conf)
-	sessionID, e := sess.Set(user.UserName)
+
+	sessionID, e := modules.Set(user.UserName, sess)
 	if e != nil {
 		context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_FAILED))
 		return

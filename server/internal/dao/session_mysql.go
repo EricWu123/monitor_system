@@ -143,36 +143,3 @@ func (s *SessionMysqlRepo) Update(sessionID string) error {
 	logging.LogInfo("update session success.")
 	return nil
 }
-
-func (s *SessionMysqlRepo) Delete(sessionID string) error {
-	tx, err := s.mysqlDB.Begin() // 开启事务
-	if err != nil {
-		if tx != nil {
-			tx.Rollback() // 回滚
-		}
-		logging.LogInfo("delete error, begin trasaction failed.")
-		return err
-	}
-	sqlStr := fmt.Sprintf("delete from session where sessionID='%s'", sessionID)
-	ret, err := tx.Exec(sqlStr)
-	if err != nil {
-		tx.Rollback() // 回滚
-		logging.LogInfof("exec sqlStr failed, err:%v, sql:%v", err, sqlStr)
-		return err
-	}
-	affRow, err := ret.RowsAffected()
-	if err != nil {
-		tx.Rollback() // 回滚
-		logging.LogInfof("exec RowsAffected failed, err:%v", err)
-		return err
-	}
-	if affRow != 1 {
-		logging.LogInfo("Delete affRow:", affRow)
-		tx.Rollback()
-		return errors.New("delete session failed")
-	}
-
-	tx.Commit()
-	logging.LogInfo("delete session success.")
-	return nil
-}

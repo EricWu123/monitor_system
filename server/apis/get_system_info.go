@@ -78,7 +78,7 @@ func QuerySystemInfo(context *gin.Context) {
 		context.JSON(http.StatusOK, response.Response(errcode.ERR_CODE_FAILED))
 		return
 	}
-	logging.LogInfo("get system info success, info:", sysInfos)
+	logging.LogInfof("get system info success, info:%+v", sysInfos)
 
 	context.JSON(http.StatusOK, response.ResponseWithData(errcode.ERR_CODE_OK, sysInfos))
 }

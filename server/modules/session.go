@@ -13,7 +13,3 @@ func Set(userID string, s dao.ISession) (string, error) {
 func Update(sessionID string, s dao.ISession) error {
 	return s.Update(sessionID)
 }
-
-func Delete(sessionID string, s dao.ISession) error {
-	return s.Delete(sessionID)
-}
